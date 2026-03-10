@@ -5,8 +5,10 @@ import DraggableLine from "./components/DraggableLine.jsx";
 import DraggableCircle from "./components/DraggableCircle.jsx";
 import DraggablePolyline from "./components/DraggablePolyline.jsx";
 import DraggablePolygon from "./components/DraggablePolygon.jsx";
-import ElementsSettings from "./components/ElementsSettings/index.jsx";
+import ElementSettings from "./components/ElementsSettings/index.jsx";
+import {elementsStore} from "./stores/elementsStore.jsx";
 
+// TODO: выпадающую менюшку для настройки всего по типу как в гугл доках
 
 const SVG = ({ell, svgWidth}) => {
     return (
@@ -42,8 +44,10 @@ const generateSVGCode = (elements, svgWidth) => {
 
 function App() {
     const [svgWidth, setSvgWidth] = useState(500)
-    const [elements, setElements] = useState([])
+    const {elements, updateElements} = elementsStore()
     const [counter, setCounter] = useState(0)
+    const [isSettings, setIsSettings] = useState(false)
+    const [customizableElement, setCustomizableElement] = useState(null)
 
     const svgCode = useMemo(() => generateSVGCode(elements, svgWidth), [elements, svgWidth])
 
@@ -56,7 +60,7 @@ function App() {
     }
 
     const handleElementDrag = (id, coordinates) => {
-        setElements(prev => prev.map(ell => {
+        updateElements(prev => prev.map(ell => {
             if (ell.key === id) {
                 const ellType = id.split('_')[0]
                 switch (ellType) {
@@ -133,7 +137,7 @@ function App() {
             />
         )
 
-        setElements((prev) => [...prev, newRect])
+        updateElements((prev) => [...prev, newRect])
         setCounter(counter + 1)
     }
 
@@ -154,7 +158,7 @@ function App() {
             />
         )
 
-        setElements((prev) => [...prev, newLine])
+        updateElements((prev) => [...prev, newLine])
         setCounter(counter + 1)
     }
 
@@ -174,7 +178,7 @@ function App() {
                 onDrag={handleElementDrag}
             />
         )
-        setElements((prev) => [...prev, newCircle])
+        updateElements((prev) => [...prev, newCircle])
         setCounter(counter + 1)
     }
 
@@ -193,7 +197,7 @@ function App() {
                 onDrag={handleElementDrag}
             />
         )
-        setElements((prev) => [...prev, newPolygon])
+        updateElements((prev) => [...prev, newPolygon])
         setCounter(counter + 1)
     }
 
@@ -212,13 +216,13 @@ function App() {
                 onDrag={handleElementDrag}
             />
         )
-        setElements((prev) => [...prev, newPolyline])
+        updateElements((prev) => [...prev, newPolyline])
         setCounter(counter + 1)
     }
-
+    // ????????
     const onResize = (e, id, newWidth, newHeight) => {
         e.preventDefault()
-        setElements((prev) => prev.map(ell => {
+        updateElements((prev) => prev.map(ell => {
             return {
                 ...ell,
                 props: {
@@ -228,6 +232,11 @@ function App() {
                 }
             }
         }))
+    }
+
+    const openSettings = (id) => {
+        setIsSettings(true)
+        setCustomizableElement(elements.filter(el => el.id === id))
     }
 
     return (
@@ -262,7 +271,8 @@ function App() {
                        {svgCode}
                    </code>
             </pre>
-            <ElementsSettings ell={elements} onResize={onResize} />
+            {isSettings && <ElementSettings />
+            }
         </div>
     )
 }

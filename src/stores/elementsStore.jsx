@@ -1,7 +1,9 @@
 import { create } from "zustand";
 
-export const selectedStore = create((set, get) => ({
+export const elementsStore = create((set, get) => ({
     selected: [],
+    elements: [],
+    customizableElement: null,
 
     toggleSelected: (id) => {
         set((state) => {
@@ -20,6 +22,13 @@ export const selectedStore = create((set, get) => ({
 
     isSelected: (id) => {
         return get().selected.includes(id);
+    },
+
+    updateElements: (fn) => set((state) => ({elements: fn(state.elements)})),
+
+    setCustomizableElement: (id) => {
+
     }
+
 
 }))

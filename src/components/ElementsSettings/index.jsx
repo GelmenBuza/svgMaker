@@ -1,9 +1,9 @@
-import {selectedStore} from "../../stores/selectedStore.jsx";
+import {elementsStore} from "../../stores/elementsStore.jsx";
 import {useEffect, useState} from "react";
 
 
-export default function ElementsSettings ({ell, onResize}) {
-    const {selected} = selectedStore()
+export default function ElementsSettings ({ell}) {
+    const {selected} = elementsStore()
     console.log(ell)
     const [width, setWidth] = useState('')
     const [height, setHeight] = useState('')
@@ -14,8 +14,9 @@ export default function ElementsSettings ({ell, onResize}) {
                 const type = id.split('_')[0]
                 switch(type) {
                     case 'rectangle':
+                        // onSubmit={(e) => onResize(e, id, +width, +height)}
                         return (
-                            <form onSubmit={(e) => onResize(e, id, +width, +height)}>
+                            <form>
                                 <p>{id}</p>
                                 <label>
                                     width:
