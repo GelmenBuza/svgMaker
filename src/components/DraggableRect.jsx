@@ -1,10 +1,12 @@
 import {useState} from "react";
+import {selectedStore} from "../stores/selectedStore.jsx";
 
 
 export default function DraggableRect({id, x, y, rx, ry, width, height, fill, stroke, onDrag, onDragEnd}) {
     const [isDragging, setIsDragging] = useState(false)
     const [startPos, setStartPos] = useState({x: 0, y: 0})
     const [initialPos, setInitialPos] = useState({x, y})
+    const {isSelected, toggleSelected} = selectedStore()
 
     const handlePointerDown = (e) => {
         e.preventDefault()
@@ -51,7 +53,9 @@ export default function DraggableRect({id, x, y, rx, ry, width, height, fill, st
             fill={fill}
             stroke={stroke}
             strokeWidth={1}
+            scale={2}
 
+            onClick={() => toggleSelected(id)}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}

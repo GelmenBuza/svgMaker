@@ -5,6 +5,7 @@ import DraggableLine from "./components/DraggableLine.jsx";
 import DraggableCircle from "./components/DraggableCircle.jsx";
 import DraggablePolyline from "./components/DraggablePolyline.jsx";
 import DraggablePolygon from "./components/DraggablePolygon.jsx";
+import ElementsSettings from "./components/ElementsSettings/index.jsx";
 
 
 const SVG = ({ell, svgWidth}) => {
@@ -215,17 +216,34 @@ function App() {
         setCounter(counter + 1)
     }
 
+    const onResize = (e, id, newWidth, newHeight) => {
+        e.preventDefault()
+        setElements((prev) => prev.map(ell => {
+            return {
+                ...ell,
+                props: {
+                    ...ell.props,
+                    width: newWidth,
+                    height: newHeight,
+                }
+            }
+        }))
+    }
+
     return (
         <div className="main-container">
-            <button onClick={() => addRectangle()}>Rectangle</button>
+            <div className='create-btn'>
+                <button onClick={() => addRectangle()}>Rectangle</button>
 
-            <button onClick={() => addLine()}>Line</button>
+                <button onClick={() => addLine()}>Line</button>
 
-            <button onClick={() => addCircle()}>Circle</button>
+                <button onClick={() => addCircle()}>Circle</button>
 
-            <button onClick={() => addPolygon()}>polygon</button>
+                <button onClick={() => addPolygon()}>polygon</button>
 
-            <button onClick={() => addPolyline()}>polyline</button>
+                <button onClick={() => addPolyline()}>polyline</button>
+            </div>
+
 
             <SVG ell={elements} svgWidth={svgWidth}/>
 
@@ -243,7 +261,8 @@ function App() {
                    <code>
                        {svgCode}
                    </code>
-               </pre>
+            </pre>
+            <ElementsSettings ell={elements} onResize={onResize} />
         </div>
     )
 }
