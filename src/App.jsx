@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useState} from 'react'
+import {useMemo, useState} from 'react'
 import './App.css'
 import DraggableRect from "./components/DraggableRect.jsx";
 import DraggableLine from "./components/DraggableLine.jsx";
@@ -24,7 +24,6 @@ const SVG = ({ell, svgWidth}) => {
 
 const generateSVGCode = (elements, svgWidth) => {
     const ell = elements.map(el => {
-        console.log("Error here: ", el);
         const type_ell = el.props.id.split('_')[0]
         switch (type_ell) {
             case 'rectangle':
@@ -47,9 +46,17 @@ const generateSVGCode = (elements, svgWidth) => {
 
 function App() {
     const [svgWidth, setSvgWidth] = useState(500)
-    const {elements, updateElements, customizableElement, setCustomizableElement} = elementsStore()
+    const {
+        elements,
+        updateElements,
+        customizableElementId,
+        setCustomizableElement,
+        getCustomizableElement
+    } = elementsStore()
     const [counter, setCounter] = useState(0)
     const [isSettings, setIsSettings] = useState(false)
+
+    const customizableElement = elements.map(el => el.props?.id === customizableElementId)
 
     const svgCode = useMemo(() => generateSVGCode(elements, svgWidth), [elements, svgWidth])
 
@@ -143,7 +150,7 @@ function App() {
         )
 
         updateElements((prev) => [...prev, newRect])
-        setCounter(prev=> prev+1)
+        setCounter(prev => prev + 1)
     }
 
     const addLine = () => {
@@ -164,7 +171,7 @@ function App() {
         )
 
         updateElements((prev) => [...prev, newLine])
-        setCounter(prev=> prev+1)
+        setCounter(prev => prev + 1)
     }
 
     const addCircle = () => {
@@ -184,7 +191,7 @@ function App() {
             />
         )
         updateElements((prev) => [...prev, newCircle])
-        setCounter(prev=> prev+1)
+        setCounter(prev => prev + 1)
     }
 
     const addPolygon = () => {
@@ -203,7 +210,7 @@ function App() {
             />
         )
         updateElements((prev) => [...prev, newPolygon])
-        setCounter(prev=> prev+1)
+        setCounter(prev => prev + 1)
     }
 
     const addPolyline = () => {
@@ -222,47 +229,53 @@ function App() {
             />
         )
         updateElements((prev) => [...prev, newPolyline])
-        setCounter(prev=> prev+1)
+        setCounter(prev => prev + 1)
     }
 
     const openSettings = (id) => {
         setCustomizableElement(id)
+        console.log(customizableElementId)
     }
 
     return (
-        <div className="main-container">
-            <div className='create-btn'>
-                <button onClick={() => addRectangle()}>Rectangle</button>
+        <>
+            <div className="main-container">
+                <div className="svg-container">
+                    <div className='create-btn'>
+                        <button onClick={() => addRectangle()}>Rectangle</button>
 
-                <button onClick={() => addLine()}>Line</button>
+                        <button onClick={() => addLine()}>Line</button>
 
-                <button onClick={() => addCircle()}>Circle</button>
+                        <button onClick={() => addCircle()}>Circle</button>
 
-                <button onClick={() => addPolygon()}>polygon</button>
+                        <button onClick={() => addPolygon()}>polygon</button>
 
-                <button onClick={() => addPolyline()}>polyline</button>
+                        <button onClick={() => addPolyline()}>polyline</button>
+                    </div>
+
+
+                    <SVG ell={elements} svgWidth={svgWidth}/>
+
+                    <h2 style={{cursor: 'pointer', fontWeight: 'bold'}}>SVG код</h2>
+                    <pre style={{
+                        textAlign: 'left',
+                        background: '#1e1e1e',
+                        color: '#d4d4d4',
+                        padding: '15px',
+                        borderRadius: '6px',
+                        overflow: 'auto',
+                        fontSize: '13px',
+                        lineHeight: '1.4'
+                    }}>
+                        <code>
+                            {svgCode}
+                        </code>
+                    </pre>
+                </div>
             </div>
 
-
-            <SVG ell={elements} svgWidth={svgWidth}/>
-
-            <h2 style={{cursor: 'pointer', fontWeight: 'bold'}}>SVG код</h2>
-            <pre style={{
-                textAlign: 'left',
-                background: '#1e1e1e',
-                color: '#d4d4d4',
-                padding: '15px',
-                borderRadius: '6px',
-                overflow: 'auto',
-                fontSize: '13px',
-                lineHeight: '1.4'
-            }}>
-                   <code>
-                       {svgCode}
-                   </code>
-            </pre>
-            {customizableElement && <ElementSettings />}
-        </div>
+            {customizableElementId && <ElementSettings/>}
+        </>
     )
 }
 

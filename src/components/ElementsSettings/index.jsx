@@ -1,32 +1,61 @@
 import {elementsStore} from "../../stores/elementsStore.jsx";
-import {useEffect, useState} from "react";
+import style from "./style.module.css";
 
+export default function ElementSettings() {
+    const {customizableElementId, elements, updateElements} = elementsStore()
 
-export default function ElementSettings () {
-    const {customizableElement, elements, updateElements} = elementsStore()
+    const element = elements.find(el => el.props?.id === customizableElementId);
 
-    const element = elements.find(el => el.props?.id === customizableElement);
-
-    if(element?.props) return null;
+    if (!element) return null;
 
     const handleChange = (field, value) => {
         const numValue = Math.max(0, parseInt(value) || 0);
 
         updateElements(prev => prev.map(el =>
-            el.props?.id === customizableElement
-                ? { ...el, props: { ...el.props, [field]: numValue } }
+            el.props?.id === customizableElementId
+                ? {...el, props: {...el.props, [field]: numValue}}
                 : el
         ));
     }
 
     return (
-        <div className="settings" id={customizableElement.props.id}>
+        <div className={style.settings} id={customizableElementId}>
             <label htmlFor="">
-                <input type="number" min={0} value={element.props.width || 0} onChange={(e) => handleChange('width', e.target.value)} />
+                Width:
+                <input type="number" min={0} value={element.props.width ?? 0}
+                       onChange={(e) => handleChange('width', e.target.value)}/>
             </label>
             <label htmlFor="">
-                <input type="number" min={0} value={element.props.height || 0} onChange={(e) => handleChange('height', e.target.value)} />
+                Height:
+                <input type="number" min={0} value={element.props.height ?? 0}
+                       onChange={(e) => handleChange('height', e.target.value)}/>
             </label>
+
+            <label htmlFor="">
+                rx:
+                <input type="number" min={0} value={element.props.rx ?? 0}
+                       onChange={(e) => handleChange('rx', e.target.value)}/>
+            </label>
+            <label htmlFor="">
+                ry:
+                <input type="number" min={0} value={element.props.ry ?? 0}
+                       onChange={(e) => handleChange('ry', e.target.value)}/>
+            </label>
+            {/*<label htmlFor="">*/}
+            {/*    Fill:*/}
+            {/*    <input type="color" min={0} value={element.props.fill ?? 0}*/}
+            {/*           onChange={(e) => handleChange('fill', e.target.value)}/>*/}
+            {/*</label>*/}
+            {/*<label htmlFor="">*/}
+            {/*    Stroke:*/}
+            {/*    <input type="color" min={0} value={element.props.stroke ?? 0}*/}
+            {/*           onChange={(e) => handleChange('stroke', e.target.value)}/>*/}
+            {/*</label>*/}
+            {/*<label htmlFor="">*/}
+            {/*    Stroke width:*/}
+            {/*    <input type="number" min={0} value={element.props.strokeWidth ?? 0}*/}
+            {/*           onChange={(e) => handleChange('strokeWidth', e.target.value)}/>*/}
+            {/*</label>*/}
         </div>
     )
 }

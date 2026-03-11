@@ -1,9 +1,9 @@
-import { create } from "zustand";
+import {create} from "zustand";
 
 export const elementsStore = create((set, get) => ({
     selected: [],
     elements: [],
-    customizableElement: null,
+    customizableElementId: null,
 
     toggleSelected: (id) => {
         set((state) => {
@@ -25,12 +25,23 @@ export const elementsStore = create((set, get) => ({
     },
 
     updateElements: (fn) => {
-        console.log('els:', get().elements, "cust:", get().customizableElement);
-        set((state) => ({elements: fn(state.elements)}))},
+        set((state) => ({elements: fn(state.elements)}))
+    },
 
     setCustomizableElement: (id) => {
-        console.log("TUT:", get().elements.find(element => element.props.id === id));
-        set((state) => ({customizableElement: state.elements.find(item => item.props.id === id)}));
+        console.log(id)
+        set((state) => {
+            const elementExists = state.elements.some((element) => element.props?.id === id);
+            console.log(elementExists, id)
+            return {
+                customizableElementId: elementExists ? id : null,
+            }
+        });
+    },
+
+    getCustomizableElement: () => {
+        const state = get()
+        return state.elements.find(el => el.props?.id === state.customizableElementId);
     }
 
 }))

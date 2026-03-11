@@ -1,11 +1,25 @@
-import {useState} from "react";
+import {useRef, useState} from "react";
 import {elementsStore} from "../stores/elementsStore.jsx";
 
 
-export default function DraggableRect({id, x, y, rx, ry, width, height, fill, stroke, onDrag, openSettings, onDragEnd}) {
+export default function DraggableRect({
+                                          id,
+                                          x,
+                                          y,
+                                          rx,
+                                          ry,
+                                          width,
+                                          height,
+                                          fill,
+                                          stroke,
+                                          onDrag,
+                                          openSettings,
+                                          onDragEnd
+                                      }) {
     const [isDragging, setIsDragging] = useState(false)
     const [startPos, setStartPos] = useState({x: 0, y: 0})
-    const [initialPos, setInitialPos] = useState({x, y})
+    const initialPosRef = useRef({x, y})
+    const svgRef = useRef(null)
     const {isSelected, toggleSelected} = elementsStore()
 
     const handlePointerDown = (e) => {
@@ -14,23 +28,22 @@ export default function DraggableRect({id, x, y, rx, ry, width, height, fill, st
 
         setIsDragging(true)
         setStartPos({x: e.clientX, y: e.clientY})
-        setInitialPos({x, y})
+        initialPosRef.current = {x, y}
+        svgRef.current = e.currentTarget.ownerSVGElement
 
         e.currentTarget.setPointerCapture?.(e.pointerId)
     }
 
     const handlePointerMove = (e) => {
-        if (!isDragging) return
+        if (!isDragging || !svgRef.current) return
 
-        const svg = e.currentTarget.ownerSVGElement;
-        if (svg) {
-            const ctm = svg.getScreenCTM()
-            if (ctm) {
-                const deltaX = (e.clientX - startPos.x) / ctm.a
-                const deltaY = (e.clientY - startPos.y) / ctm.d
 
-                onDrag?.(id, {x: initialPos.x + deltaX, y: initialPos.y + deltaY})
-            }
+        const ctm = svgRef.current.getScreenCTM()
+        if (ctm) {
+            const deltaX = (e.clientX - startPos.x) / ctm.a
+            const deltaY = (e.clientY - startPos.y) / ctm.d
+
+            onDrag?.(id, {x: initialPosRef.current.x + deltaX, y: initialPosRef.current.y + deltaY})
         }
     }
 
@@ -55,7 +68,9 @@ export default function DraggableRect({id, x, y, rx, ry, width, height, fill, st
             strokeWidth={1}
             scale={2}
 
-            onDoubleClick={() => openSettings(id)}
+            onDoubleClick={() => {
+                openSettings(id)
+            }}
             // onClick={() => toggleSelected(id)}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}

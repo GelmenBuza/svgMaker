@@ -1,0 +1,11 @@
+
+.settings {
+    display: flex;
+    flex-direction: column;
+    background-color: #3b3b3b;
+    height: 100vh;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+}
