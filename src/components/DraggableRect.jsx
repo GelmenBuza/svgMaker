@@ -2,7 +2,7 @@ import {useState} from "react";
 import {elementsStore} from "../stores/elementsStore.jsx";
 
 
-export default function DraggableRect({id, x, y, rx, ry, width, height, fill, stroke, onDrag, onDragEnd}) {
+export default function DraggableRect({id, x, y, rx, ry, width, height, fill, stroke, onDrag, openSettings, onDragEnd}) {
     const [isDragging, setIsDragging] = useState(false)
     const [startPos, setStartPos] = useState({x: 0, y: 0})
     const [initialPos, setInitialPos] = useState({x, y})
@@ -55,7 +55,7 @@ export default function DraggableRect({id, x, y, rx, ry, width, height, fill, st
             strokeWidth={1}
             scale={2}
 
-            onDoubleClick={() => openSettings()}
+            onDoubleClick={() => openSettings(id)}
             // onClick={() => toggleSelected(id)}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}

@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react'
+import {useCallback, useMemo, useState} from 'react'
 import './App.css'
 import DraggableRect from "./components/DraggableRect.jsx";
 import DraggableLine from "./components/DraggableLine.jsx";
@@ -24,6 +24,7 @@ const SVG = ({ell, svgWidth}) => {
 
 const generateSVGCode = (elements, svgWidth) => {
     const ell = elements.map(el => {
+        console.log("Error here: ", el);
         const type_ell = el.props.id.split('_')[0]
         switch (type_ell) {
             case 'rectangle':
@@ -36,6 +37,8 @@ const generateSVGCode = (elements, svgWidth) => {
                 return `    <polyline points="${el.props.points}" fill="${el.props.fill}" stroke="${el.props.stroke}" stroke-width="${el.props.strokeWidth}" />`
             case 'polygon':
                 return `    <polygon points="${el.props.points}" fill="${el.props.fill}" stroke="${el.props.stroke}" stroke-width="${el.props.strokeWidth}" />`
+            default:
+                console.warn(`Unknown element type: ${type_ell}`)
         }
     }).join('\n')
 
@@ -44,10 +47,9 @@ const generateSVGCode = (elements, svgWidth) => {
 
 function App() {
     const [svgWidth, setSvgWidth] = useState(500)
-    const {elements, updateElements} = elementsStore()
+    const {elements, updateElements, customizableElement, setCustomizableElement} = elementsStore()
     const [counter, setCounter] = useState(0)
     const [isSettings, setIsSettings] = useState(false)
-    const [customizableElement, setCustomizableElement] = useState(null)
 
     const svgCode = useMemo(() => generateSVGCode(elements, svgWidth), [elements, svgWidth])
 
@@ -61,7 +63,7 @@ function App() {
 
     const handleElementDrag = (id, coordinates) => {
         updateElements(prev => prev.map(ell => {
-            if (ell.key === id) {
+            if (ell.props.id === id) {
                 const ellType = id.split('_')[0]
                 switch (ellType) {
                     case 'rectangle':
@@ -110,6 +112,8 @@ function App() {
                                 points: coordinatesToString(coordinates),
                             }
                         }
+                    default:
+                        console.warn(`Unknown element: ${ell}`)
                 }
             }
             return ell;
@@ -133,12 +137,13 @@ function App() {
                 fill={'white'}
                 stroke={'black'}
 
+                openSettings={openSettings}
                 onDrag={handleElementDrag}
             />
         )
 
         updateElements((prev) => [...prev, newRect])
-        setCounter(counter + 1)
+        setCounter(prev=> prev+1)
     }
 
     const addLine = () => {
@@ -159,7 +164,7 @@ function App() {
         )
 
         updateElements((prev) => [...prev, newLine])
-        setCounter(counter + 1)
+        setCounter(prev=> prev+1)
     }
 
     const addCircle = () => {
@@ -179,7 +184,7 @@ function App() {
             />
         )
         updateElements((prev) => [...prev, newCircle])
-        setCounter(counter + 1)
+        setCounter(prev=> prev+1)
     }
 
     const addPolygon = () => {
@@ -198,7 +203,7 @@ function App() {
             />
         )
         updateElements((prev) => [...prev, newPolygon])
-        setCounter(counter + 1)
+        setCounter(prev=> prev+1)
     }
 
     const addPolyline = () => {
@@ -217,26 +222,11 @@ function App() {
             />
         )
         updateElements((prev) => [...prev, newPolyline])
-        setCounter(counter + 1)
-    }
-    // ????????
-    const onResize = (e, id, newWidth, newHeight) => {
-        e.preventDefault()
-        updateElements((prev) => prev.map(ell => {
-            return {
-                ...ell,
-                props: {
-                    ...ell.props,
-                    width: newWidth,
-                    height: newHeight,
-                }
-            }
-        }))
+        setCounter(prev=> prev+1)
     }
 
     const openSettings = (id) => {
-        setIsSettings(true)
-        setCustomizableElement(elements.filter(el => el.id === id))
+        setCustomizableElement(id)
     }
 
     return (
@@ -271,8 +261,7 @@ function App() {
                        {svgCode}
                    </code>
             </pre>
-            {isSettings && <ElementSettings />
-            }
+            {customizableElement && <ElementSettings />}
         </div>
     )
 }
