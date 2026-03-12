@@ -8,6 +8,7 @@ import DraggablePolygon from "./components/DraggablePolygon.jsx";
 import ElementSettings from "./components/ElementsSettings/index.jsx";
 import {elementsStore} from "./stores/elementsStore.jsx";
 
+// TODO: Надо полностью переделывать логику работы с фигурами, а так же заготовки, час в нейронке
 
 const SVG = ({ell, svgWidth}) => {
     return (
@@ -38,10 +39,10 @@ const generateSVGCode = (elements, svgWidth) => {
                 const rotation = el.props.rotate || 0;
                 return `    <ellipse cx="${el.props.cx}" cy="${el.props.cy}" rx="${el.props.rx}" ry="${el.props.ry ? el.props.ry : el.props.rx}" fill="${el.props.fill}"${el.props.stroke ? ` stroke="${el.props.stroke}"` : ''}${el.props.strokeWidth ? ` stroke-width="${el.props.strokeWidth}"` : ''} ${rotation ? `transform="rotate(${rotation} ${el.props.cx} ${el.props.cy})"` : ''}/>`
             }
-            case 'polyline':
-                return `    <polyline points="${el.props.points}" fill="${el.props.fill}" stroke="${el.props.stroke}" stroke-width="${el.props.strokeWidth}" />`
             case 'polygon':
                 return `    <polygon points="${el.props.points}" fill="${el.props.fill}" stroke="${el.props.stroke}" stroke-width="${el.props.strokeWidth}" />`
+            case 'polyline':
+                return `    <polyline points="${el.props.points}" fill="${el.props.fill}" stroke="${el.props.stroke}" stroke-width="${el.props.strokeWidth}" />`
             default:
                 console.warn(`Unknown element type: ${type_ell}`)
         }
@@ -221,7 +222,9 @@ function App() {
                 fill={'none'}
                 stroke={'#ffffff'}
                 strokeWidth={1}
+                rotate={0}
 
+                openSettings={openSettings}
                 onDrag={handleElementDrag}
             />
         )
