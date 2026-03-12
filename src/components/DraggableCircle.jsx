@@ -1,10 +1,27 @@
-import {useState} from "react";
+import {useRef, useState} from "react";
+import {elementsStore} from "../stores/elementsStore.jsx";
 
 
-export default function DraggableCircle({id, cx, cy, rx, ry, fill, stroke, onDrag, onDragEnd}) {
+export default function DraggableCircle({
+                                            id,
+                                            cx,
+                                            cy,
+                                            rx,
+                                            ry,
+                                            fill,
+                                            stroke,
+                                            strokeWidth,
+                                            rotate,
+                                            openSettings,
+                                            onDrag,
+                                            onDragEnd
+                                        }) {
     const [isDragging, setIsDragging] = useState(false)
     const [startPos, setStartPos] = useState({cx: 0, cy: 0})
-    const [initialPos, setInitialPos] = useState({cx, cy})
+    const initialPosRef = useRef({cx, cy})
+    const svgRef = useRef(null)
+    const {areaWidth, isSelected, toggleSelected} = elementsStore()
+
 
     const handlePointerDown = (e) => {
         e.preventDefault()
@@ -12,7 +29,8 @@ export default function DraggableCircle({id, cx, cy, rx, ry, fill, stroke, onDra
 
         setIsDragging(true)
         setStartPos({cx: e.clientX, cy: e.clientY})
-        setInitialPos({cx, cy})
+        initialPosRef.current = {cx, cy}
+        svgRef.current = e.currentTarget.ownerSVGElement
 
         e.currentTarget.setPointerCapture?.(e.pointerId)
     }
@@ -20,15 +38,16 @@ export default function DraggableCircle({id, cx, cy, rx, ry, fill, stroke, onDra
     const handlePointerMove = (e) => {
         if (!isDragging) return
 
-        const svg = e.currentTarget.ownerSVGElement;
-        if (svg) {
-            const ctm = svg.getScreenCTM()
-            if (ctm) {
-                const deltaX = (e.clientX - startPos.cx) / ctm.a
-                const deltaY = (e.clientY - startPos.cy) / ctm.d
+        const ctm = svgRef.current.getScreenCTM()
+        if (ctm) {
+            const deltaX = (e.clientX - startPos.cx) / ctm.a
+            const deltaY = (e.clientY - startPos.cy) / ctm.d
 
-                onDrag?.(id, {cx: initialPos.cx + deltaX, cy: initialPos.cy + deltaY})
+            if ((initialPosRef.current.cx + deltaX <= 0 || initialPosRef.current.cy + deltaY <= 0) || (initialPosRef.current.cx + deltaX >= areaWidth - ry || initialPosRef.current.cy + deltaY >= areaWidth - rx)) {
+                return;
             }
+
+            onDrag?.(id, {cx: initialPosRef.current.cx + deltaX, cy: initialPosRef.current.cy + deltaY})
         }
     }
 
@@ -40,6 +59,8 @@ export default function DraggableCircle({id, cx, cy, rx, ry, fill, stroke, onDra
         }
     }
 
+    const rotation = rotate || 0;
+
     return (
         <ellipse
             cx={cx}
@@ -48,7 +69,13 @@ export default function DraggableCircle({id, cx, cy, rx, ry, fill, stroke, onDra
             ry={ry ? ry : rx}
             fill={fill}
             stroke={stroke}
-            strokeWidth={1}
+            strokeWidth={strokeWidth}
+
+            onDoubleClick={() => {
+                openSettings(id)
+            }}
+
+            transform={rotation ? `rotate(${rotation} ${cx} ${cy})` : undefined}
 
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}

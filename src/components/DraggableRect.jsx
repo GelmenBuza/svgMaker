@@ -75,7 +75,6 @@ export default function DraggableRect({
             fill={fill}
             stroke={stroke}
             strokeWidth={strokeWidth}
-            scale={2}
 
             onDoubleClick={() => {
                 openSettings(id)

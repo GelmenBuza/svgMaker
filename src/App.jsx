@@ -34,8 +34,10 @@ const generateSVGCode = (elements, svgWidth) => {
             }
             case 'line':
                 return `    <line x1="${el.props.x1}" y1="${el.props.y1}" x2="${el.props.x2}" y2="${el.props.y2}"${el.props.stroke ? ` stroke="${el.props.stroke}"` : ''}${el.props.strokeWidth ? ` stroke-width="${el.props.strokeWidth}"` : ''}/>`
-            case 'ellipse':
-                return `    <ellipse cx="${el.props.cx}" cy="${el.props.cy}" rx="${el.props.rx}" ry="${el.props.ry ? el.props.ry : el.props.rx}" fill="${el.props.fill}"${el.props.stroke ? ` stroke="${el.props.stroke}"` : ''}${el.props.strokeWidth ? ` stroke-width="${el.props.strokeWidth}"` : ''}/>`
+            case 'ellipse': {
+                const rotation = el.props.rotate || 0;
+                return `    <ellipse cx="${el.props.cx}" cy="${el.props.cy}" rx="${el.props.rx}" ry="${el.props.ry ? el.props.ry : el.props.rx}" fill="${el.props.fill}"${el.props.stroke ? ` stroke="${el.props.stroke}"` : ''}${el.props.strokeWidth ? ` stroke-width="${el.props.strokeWidth}"` : ''} ${rotation ? `transform="rotate(${rotation} ${el.props.cx} ${el.props.cy})"` : ''}/>`
+            }
             case 'polyline':
                 return `    <polyline points="${el.props.points}" fill="${el.props.fill}" stroke="${el.props.stroke}" stroke-width="${el.props.strokeWidth}" />`
             case 'polygon':
@@ -146,8 +148,8 @@ function App() {
                 width={50}
                 height={50}
                 rotate={0}
-                fill={'white'}
-                stroke={'black'}
+                fill={'#ffffff'}
+                stroke={'#000000'}
                 strokeWidth={1}
 
                 openSettings={openSettings}
@@ -156,27 +158,6 @@ function App() {
         )
 
         updateElements((prev) => [...prev, newRect])
-        setCounter(prev => prev + 1)
-    }
-
-    const addLine = () => {
-        const id = `line_${counter}`
-        const newLine = (
-            <DraggableLine
-                key={id}
-                id={id}
-                x1={0}
-                y1={0}
-                x2={50}
-                y2={50}
-                stroke={'white'}
-                strokeWidth={1}
-
-                onDrag={handleElementDrag}
-            />
-        )
-
-        updateElements((prev) => [...prev, newLine])
         setCounter(prev => prev + 1)
     }
 
@@ -190,15 +171,44 @@ function App() {
                 cx={50}
                 cy={50}
                 rx={10}
-                fill={'white'}
-                stroke={'black'}
+                ry={10}
+                rotate={0}
+                fill={'#ffffff'}
+                strokeWidth={1}
+                stroke={'#000000'}
 
+                openSettings={openSettings}
                 onDrag={handleElementDrag}
             />
         )
         updateElements((prev) => [...prev, newCircle])
         setCounter(prev => prev + 1)
     }
+
+
+    const addLine = () => {
+        const id = `line_${counter}`
+        const newLine = (
+            <DraggableLine
+                key={id}
+                id={id}
+                x1={0}
+                y1={0}
+                x2={50}
+                y2={50}
+                stroke={'#ffffff'}
+                strokeWidth={1}
+                rotate={0}
+
+                openSettings={openSettings}
+                onDrag={handleElementDrag}
+            />
+        )
+
+        updateElements((prev) => [...prev, newLine])
+        setCounter(prev => prev + 1)
+    }
+
 
     const addPolygon = () => {
         const id = `polygon_${counter}`
@@ -209,7 +219,7 @@ function App() {
                 id={id}
                 points={`0,100 50,50 100,100`}
                 fill={'none'}
-                stroke={'white'}
+                stroke={'#ffffff'}
                 strokeWidth={1}
 
                 onDrag={handleElementDrag}
@@ -228,7 +238,7 @@ function App() {
                 id={id}
                 points={`0,100 50,50 100,100`}
                 fill={'none'}
-                stroke={'white'}
+                stroke={'#ffffff'}
                 strokeWidth={1}
 
                 onDrag={handleElementDrag}
