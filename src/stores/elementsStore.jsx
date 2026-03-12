@@ -3,6 +3,7 @@ import {create} from "zustand";
 export const elementsStore = create((set, get) => ({
     selected: [],
     elements: [],
+    areaWidth: 500,
     customizableElementId: null,
 
     toggleSelected: (id) => {

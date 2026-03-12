@@ -55,4 +55,10 @@
     display: flex;
     align-items: center;
     flex-direction: column;
+    gap: 1rem;
+}
+
+.svg-area {
+    border: 1px solid white;
+    box-shadow: #1a1a1a 0 0  15px 10px;
 }

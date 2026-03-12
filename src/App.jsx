@@ -12,6 +12,7 @@ import {elementsStore} from "./stores/elementsStore.jsx";
 const SVG = ({ell, svgWidth}) => {
     return (
         <svg
+            className={'svg-area'}
             width={`${svgWidth}px`}
             viewBox={`0 0 ${svgWidth} ${svgWidth}`}
             xmlns="http://www.w3.org/2000/svg"
@@ -48,20 +49,20 @@ const generateSVGCode = (elements, svgWidth) => {
 }
 
 function App() {
-    const [svgWidth, setSvgWidth] = useState(500)
     const {
+        areaWidth,
         elements,
         updateElements,
         customizableElementId,
         setCustomizableElement,
-        getCustomizableElement
+        getCustomizableElement,
     } = elementsStore()
     const [counter, setCounter] = useState(0)
     const [isSettings, setIsSettings] = useState(false)
 
     const customizableElement = elements.map(el => el.props?.id === customizableElementId)
 
-    const svgCode = useMemo(() => generateSVGCode(elements, svgWidth), [elements, svgWidth])
+    const svgCode = useMemo(() => generateSVGCode(elements, areaWidth), [elements, areaWidth])
 
     const coordinatesToString = (coordinates) => {
         let result = ''
@@ -258,7 +259,7 @@ function App() {
                     </div>
 
 
-                    <SVG ell={elements} svgWidth={svgWidth}/>
+                    <SVG ell={elements} svgWidth={areaWidth}/>
 
                     <h2 style={{cursor: 'pointer', fontWeight: 'bold'}}>SVG код</h2>
                     <pre style={{

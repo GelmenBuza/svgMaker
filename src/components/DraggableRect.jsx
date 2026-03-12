@@ -22,7 +22,7 @@ export default function DraggableRect({
     const [startPos, setStartPos] = useState({x: 0, y: 0})
     const initialPosRef = useRef({x, y})
     const svgRef = useRef(null)
-    const {isSelected, toggleSelected} = elementsStore()
+    const {areaWidth, isSelected, toggleSelected} = elementsStore()
 
     const handlePointerDown = (e) => {
         e.preventDefault()
@@ -44,6 +44,9 @@ export default function DraggableRect({
         if (ctm) {
             const deltaX = (e.clientX - startPos.x) / ctm.a
             const deltaY = (e.clientY - startPos.y) / ctm.d
+            if ((initialPosRef.current.x + deltaX <= 0 || initialPosRef.current.y + deltaY <= 0) || (initialPosRef.current.x + deltaX >= areaWidth - height || initialPosRef.current.y + deltaY >= areaWidth - width)){
+                return;
+            }
 
             onDrag?.(id, {x: initialPosRef.current.x + deltaX, y: initialPosRef.current.y + deltaY})
         }
