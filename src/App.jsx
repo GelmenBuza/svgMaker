@@ -8,7 +8,6 @@ import DraggablePolygon from "./components/DraggablePolygon.jsx";
 import ElementSettings from "./components/ElementsSettings/index.jsx";
 import {elementsStore} from "./stores/elementsStore.jsx";
 
-// TODO: выпадающую менюшку для настройки всего по типу как в гугл доках
 
 const SVG = ({ell, svgWidth}) => {
     return (
@@ -26,8 +25,12 @@ const generateSVGCode = (elements, svgWidth) => {
     const ell = elements.map(el => {
         const type_ell = el.props.id.split('_')[0]
         switch (type_ell) {
-            case 'rectangle':
-                return `    <rect x="${el.props.x}" y="${el.props.y}" width="${el.props.width}" height="${el.props.height}"${el.props.rx ? ` rx="${el.props.rx}"` : ''}${el.props.ry ? ` ry="${el.props.ry}"` : ''} fill="${el.props.fill}"${el.props.stroke ? ` stroke="${el.props.stroke}"` : ''}${el.props.strokeWidth ? ` stroke-width="${el.props.strokeWidth}"` : ''}/>`;
+            case 'rectangle': {
+                const rotation = el.props.rotate || 0;
+                const cx = +el.props.x + (+el.props.width / 2);
+                const cy = +el.props.y + (+el.props.height / 2);
+                return `    <rect x="${el.props.x}" y="${el.props.y}" width="${el.props.width}" height="${el.props.height}"${el.props.rx ? ` rx="${el.props.rx}"` : ''}${el.props.ry ? ` ry="${el.props.ry}"` : ''} fill="${el.props.fill}"${el.props.stroke ? ` stroke="${el.props.stroke}"` : ''}${el.props.strokeWidth ? ` stroke-width="${el.props.strokeWidth}"` : ''} ${rotation ? `transform="rotate(${rotation} ${cx} ${cy})"` : ''}/>`;
+            }
             case 'line':
                 return `    <line x1="${el.props.x1}" y1="${el.props.y1}" x2="${el.props.x2}" y2="${el.props.y2}"${el.props.stroke ? ` stroke="${el.props.stroke}"` : ''}${el.props.strokeWidth ? ` stroke-width="${el.props.strokeWidth}"` : ''}/>`
             case 'ellipse':
@@ -141,8 +144,10 @@ function App() {
                 ry={10}
                 width={50}
                 height={50}
+                rotate={0}
                 fill={'white'}
                 stroke={'black'}
+                strokeWidth={1}
 
                 openSettings={openSettings}
                 onDrag={handleElementDrag}
@@ -234,7 +239,6 @@ function App() {
 
     const openSettings = (id) => {
         setCustomizableElement(id)
-        console.log(customizableElementId)
     }
 
     return (

@@ -29,10 +29,8 @@ export const elementsStore = create((set, get) => ({
     },
 
     setCustomizableElement: (id) => {
-        console.log(id)
         set((state) => {
             const elementExists = state.elements.some((element) => element.props?.id === id);
-            console.log(elementExists, id)
             return {
                 customizableElementId: elementExists ? id : null,
             }

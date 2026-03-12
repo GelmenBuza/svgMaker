@@ -12,6 +12,8 @@ export default function DraggableRect({
                                           height,
                                           fill,
                                           stroke,
+                                          strokeWidth,
+                                          rotate,
                                           onDrag,
                                           openSettings,
                                           onDragEnd
@@ -55,6 +57,10 @@ export default function DraggableRect({
         }
     }
 
+    const cx = x + width / 2;
+    const cy = y + height / 2;
+    const rotation = rotate || 0;
+
     return (
         <rect
             x={x}
@@ -65,12 +71,14 @@ export default function DraggableRect({
             height={height}
             fill={fill}
             stroke={stroke}
-            strokeWidth={1}
+            strokeWidth={strokeWidth}
             scale={2}
 
             onDoubleClick={() => {
                 openSettings(id)
             }}
+
+            transform={rotation ? `rotate(${rotation} ${cx} ${cy})` : undefined}
             // onClick={() => toggleSelected(id)}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
