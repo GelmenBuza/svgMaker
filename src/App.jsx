@@ -7,6 +7,7 @@ import DraggablePolyline from "./components/DraggablePolyline.jsx";
 import DraggablePolygon from "./components/DraggablePolygon.jsx";
 import ElementSettings from "./components/ElementsSettings/index.jsx";
 import {elementsStore} from "./stores/elementsStore.jsx";
+import DraggablePath from "./components/DraggablePath.jsx";
 
 // TODO: Надо полностью переделывать логику работы с фигурами, а так же заготовки, час в нейронке
 
@@ -293,6 +294,8 @@ function App() {
             </div>
 
             {customizableElementId && <ElementSettings/>}
+
+            <DraggablePath/>
         </>
     )
 }
