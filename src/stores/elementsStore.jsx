@@ -4,6 +4,7 @@ export const elementsStore = create((set, get) => ({
     selected: [],
     elements: [],
     areaWidth: 500,
+    areaHeight: 500,
     customizableElementId: null,
 
     toggleSelected: (id) => {
@@ -25,13 +26,35 @@ export const elementsStore = create((set, get) => ({
         return get().selected.includes(id);
     },
 
-    updateElements: (fn) => {
-        set((state) => ({elements: fn(state.elements)}))
-    },
+    updateElements: (arg1, arg2) => set((state) => {
+        if (typeof arg1 === 'function') {
+            return {
+                elements: arg1(state.elements),
+            }
+        }
+        const id = arg1
+        const data = arg2
+
+        const newElements = state.elements.map(el => {
+            if (el.id === id) {
+                const updatedEl = {...el}
+                if (data.d) {
+                    updatedEl.d = data.d;
+                }
+                if (data.rotate !== undefined) {
+                    updatedEl.rotate = data.rotate;
+                }
+                return updatedEl;
+            }
+            return el;
+        })
+        return {elements: newElements};
+    }),
+
 
     setCustomizableElement: (id) => {
         set((state) => {
-            const elementExists = state.elements.some((element) => element.props?.id === id);
+            const elementExists = state.elements.some((element) => element.id === id);
             return {
                 customizableElementId: elementExists ? id : null,
             }
@@ -40,7 +63,7 @@ export const elementsStore = create((set, get) => ({
 
     getCustomizableElement: () => {
         const state = get()
-        return state.elements.find(el => el.props?.id === state.customizableElementId);
+        return state.elements.find(el => el.id === state.customizableElementId);
     }
 
 }))
