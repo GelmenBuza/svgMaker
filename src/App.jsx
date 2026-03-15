@@ -9,8 +9,6 @@ import ElementSettings from "./components/ElementsSettings/index.jsx";
 import {elementsStore} from "./stores/elementsStore.jsx";
 import DraggablePath from "./components/DraggablePath.jsx";
 
-// TODO: Надо полностью переделывать логику работы с фигурами, а так же заготовки, час в нейронке
-
 const SVG = ({ell, svgWidth}) => {
     return (
         <svg

@@ -1,105 +1,78 @@
 import {elementsStore} from "../../stores/elementsStore.jsx";
 import style from "./style.module.css";
+import parsePathData from "../../utils/parsePathData.js";
+import getCenterPath from "../../utils/getCenterPath.js";
+import rotatePoints from "../../utils/rotatePoints.js";
+import pointsArrToString from "../../utils/pointsArrToString.js";
 
 export default function ElementSettings() {
-    const {customizableElementId, elements, updateElements, setCustomizableElement, areaWidth} = elementsStore()
+    const {customizableElementId, elements, updateElements, setCustomizableElement} = elementsStore()
 
-    const element = elements.find(el => el.props?.id === customizableElementId);
+    const element = elements.find(el => el?.id === customizableElementId);
 
     if (!element) return null;
-    const rotation = element.props?.rotate ?? 0;
-    const element_type = element.props.id.split("_")[0]
+
+    const rotation = element?.rotate ?? 0;
+
+    const element_type = element.id.split("_")[0]
 
     const handleChange = (field, value) => {
-        let numValue
+        if (!element) return;
+        let nemValue
         if (field === "rotate") {
-            numValue = Math.max(0, Math.min(360, parseInt(value) || 0));
-        } else if (["fill", "stroke"].includes(field)) {
-            numValue = value
-        } else {
-            numValue = Math.max(0, parseInt(value) || 0);
+            nemValue = Math.max(0, Math.min(360, parseInt(value) || 0));
+            handleAngleChange(element.id, nemValue);
+            return;
         }
-        updateElements(prev => prev.map(el =>
-            el.props?.id === customizableElementId
-                ? {...el, props: {...el.props, [field]: numValue}}
-                : el
-        ));
+
+        if (["fill", "stroke"].includes(field)) {
+            nemValue = value
+        } else if (field === "strokeWidth") {
+            nemValue = Math.max(0, parseInt(value) || 0);
+        } else {
+            nemValue = value
+        }
+
+        updateElements(element.id, {
+                ...element,
+                [field]: nemValue,
+            }
+        );
+    }
+
+    const handleAngleChange = (id, newAngel) => {
+        const targetElement = elements.find(el => el?.id === id);
+        if (!targetElement || !targetElement.d) return;
+
+        if (newAngel === 0 && (targetElement.rotate ?? 0) === 0) return;
+
+        const points = parsePathData(targetElement.d);
+        if (points.length === 0) return;
+
+        const [cx, cy] = getCenterPath(points)
+
+        const currentRotation = targetElement.rotate ?? 0;
+        const deltaAngle = newAngel - currentRotation;
+
+        if (deltaAngle === 0) {
+            updateElements([{...targetElement, rotate: newAngel}]);
+            return;
+        }
+
+        const rotatedPoints = rotatePoints(points, deltaAngle, cx, cy)
+
+        const newD = pointsArrToString(rotatedPoints)
+
+        updateElements(element.id, {
+                ...targetElement,
+                d: newD,
+                rotate: 0,
+            }
+        )
     }
 
     return (
         <div className={style.settings} id={customizableElementId}>
-            {element_type === 'rectangle' && (
-                <>
-                    <label htmlFor="">
-                        Width:
-                        <input type="number" min={0} value={element.props.width ?? 0}
-                               onChange={(e) => handleChange('width', e.target.value)}/>
-                    </label>
-                    <label htmlFor="">
-                        Height:
-                        <input type="number" min={0} value={element.props.height ?? 0}
-                               onChange={(e) => handleChange('height', e.target.value)}/>
-                    </label>
-                </>
-            )}
-            {element_type === 'circle' && (
-                <>
-                    <label htmlFor="">
-                        cx:
-                        <input type="number" min={0} value={element.props.cx ?? 0}
-                               onChange={(e) => handleChange('cx', e.target.value)}/>
-                    </label>
-                    <label htmlFor="">
-                        cy:
-                        <input type="number" min={0} value={element.props.cy ?? 0}
-                               onChange={(e) => handleChange('cy', e.target.value)}/>
-                    </label>
-                </>
-            )}
-            {element_type === 'line' && (
-                <>
-                    <label htmlFor="">
-                        x1:
-                        <input type="number" min={0} max={areaWidth} value={element.props.x1 ?? 0}
-                               onChange={(e) => handleChange('x1', e.target.value)}/>
-                    </label>
-                    <label htmlFor="">
-                        y1:
-                        <input type="number" min={0} max={areaWidth} value={element.props.y1 ?? 0}
-                               onChange={(e) => handleChange('y1', e.target.value)}/>
-                    </label>
-                    <label htmlFor="">
-                        x2:
-                        <input type="number" min={0} max={areaWidth} value={element.props.x2 ?? 0}
-                               onChange={(e) => handleChange('x2', e.target.value)}/>
-                    </label>
-                    <label htmlFor="">
-                        y2:
-                        <input type="number" min={0} max={areaWidth} value={element.props.y2 ?? 0}
-                               onChange={(e) => handleChange('y1', e.target.value)}/>
-                    </label>
-                </>
-            )}
-            {element_type !== 'line' && (
-                <>
-                    <label htmlFor="">
-                        rx:
-                        <input type="number" min={0} value={element.props.rx ?? 0}
-                               onChange={(e) => handleChange('rx', e.target.value)}/>
-                    </label>
-                    <label htmlFor="">
-                        ry:
-                        <input type="number" min={0} value={element.props.ry ?? 0}
-                               onChange={(e) => handleChange('ry', e.target.value)}/>
-                    </label>
-                    <label htmlFor="">
-                        Fill:
-                        <input type="color" value={element.props.fill ?? "#ffffff"}
-                               onChange={(e) => handleChange('fill', e.target.value)}/>
-                    </label>
-                </>
-            )}
-
             <label htmlFor="">
                 Rotate:
                 <input type="number" min={0} max={360} value={rotation}
@@ -108,12 +81,12 @@ export default function ElementSettings() {
 
             <label htmlFor="">
                 Stroke:
-                <input type="color" value={element.props.stroke ?? "#000000"}
+                <input type="color" value={element.stroke ?? "#000000"}
                        onChange={(e) => handleChange('stroke', e.target.value)}/>
             </label>
             <label htmlFor="">
                 Stroke width:
-                <input type="number" min={0} value={element.props.strokeWidth ?? 0}
+                <input type="number" min={0} value={element.strokeWidth ?? 0}
                        onChange={(e) => handleChange('strokeWidth', e.target.value)}/>
             </label>
         </div>
