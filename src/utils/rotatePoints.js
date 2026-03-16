@@ -1,3 +1,5 @@
+import getMinMaxCords from "./getMinMaxCords.js";
+
 const rotatePoints = (pointsArr, angleDeg, cx, cy) => {
     const angleRad = (angleDeg * Math.PI) / 180;
     const cos = Math.cos(angleRad);

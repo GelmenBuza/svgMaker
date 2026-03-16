@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useMemo, useRef, useState} from "react";
 import {elementsStore} from "../stores/elementsStore.jsx";
 import parsePathData from "../utils/parsePathData.js";
 import getCenterPath from "../utils/getCenterPath.js";
@@ -19,7 +19,6 @@ export default function DraggablePath({
                                       }) {
     const [isDragging, setDragging] = useState(false)
     const currentPointsArr = useMemo(() => parsePathData(d), [d])
-
     const [cx, cy] = useMemo(() => getCenterPath(currentPointsArr), [currentPointsArr])
 
     const [startPos, setStartPos] = useState({x: 0, y: 0})
@@ -28,14 +27,14 @@ export default function DraggablePath({
 
     const {areaWidth, isSelected, toggleSelected} = elementsStore()
 
-    useEffect(() => {
-        if (rotate !== 0) {
-            const rotated = rotatePoints(currentPointsArr, rotate, cx, cy)
-            const newD = pointsArrToString(rotated)
-
-            onRotateCommit?.(id, {d: newD, rotate: 0})
-        }
-    }, [rotate])
+    // ❌ УДАЛИЛ этот useEffect — он ломал вращение!
+    // useEffect(() => {
+    //     if (rotate !== 0) {
+    //         const rotated = rotatePoints(currentPointsArr, rotate, cx, cy)
+    //         const newD = pointsArrToString(rotated)
+    //         onRotateCommit?.(id, {d: newD, rotate: 0})
+    //     }
+    // }, [rotate])
 
     const handlePointerDown = (e) => {
         e.preventDefault();
@@ -67,7 +66,6 @@ export default function DraggablePath({
     }
 
     const checkPosition = (pointsToCheck) => {
-
         for (const obj of pointsToCheck) {
             const cmd = obj.command.toUpperCase()
             if (cmd === 'Z') continue
@@ -109,6 +107,7 @@ export default function DraggablePath({
         }
     }
 
+    // ✅ Визуальное отображение с поворотом (не меняет d!)
     const displayPoints = useMemo(() => {
         if (rotate !== 0) {
             return rotatePoints(currentPointsArr, rotate, cx, cy);
@@ -131,13 +130,9 @@ export default function DraggablePath({
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
             style={{
-                zIndex: 0,
                 cursor: isDragging ? 'grabbing' : 'grab',
                 pointerEvents: 'all',
             }}
         />
-
     )
 }
-
-

@@ -7,9 +7,12 @@ import DraggablePolyline from "./components/DraggablePolyline.jsx";
 import DraggablePolygon from "./components/DraggablePolygon.jsx";
 import ElementSettings from "./components/ElementsSettings/index.jsx";
 import {elementsStore} from "./stores/elementsStore.jsx";
-import DraggablePath from "./components/DraggablePath.jsx";
+import DraggablePath from "./components/tmpDragPath.jsx";
+import DraggableSettings from "./components/tmpDragSet.jsx";
+
 
 const SVG = ({ell, svgWidth}) => {
+    const {customizableElementId, updateElements} = elementsStore()
     return (
         <svg
             className={'svg-area'}
@@ -17,6 +20,11 @@ const SVG = ({ell, svgWidth}) => {
             viewBox={`0 0 ${svgWidth} ${svgWidth}`}
             xmlns="http://www.w3.org/2000/svg"
         >
+            {customizableElementId &&
+                <DraggableSettings key={`dragSettings-${customizableElementId}`} id={customizableElementId}
+                                   onDrag={updateElements}
+                                   onRotateCommit={updateElements}
+                />}
             {ell}
         </svg>
     )
@@ -36,6 +44,7 @@ const generateSVGCode = (elements, svgWidth) => {
 
     return `<svg width="${svgWidth}" viewBox="0 0 ${svgWidth} ${svgWidth}" xmlns="http://www.w3.org/2000/svg">\n${ell}\n</svg>`
 }
+
 
 function App() {
     const {
@@ -64,10 +73,6 @@ function App() {
         setCounter(prev => prev + 1)
     }
 
-    const handleElementUpdate = (id, data) => {
-        updateElements(id, data)
-    }
-
     const openSettings = (id) => {
         console.log("+")
         setCustomizableElement(id)
@@ -80,10 +85,10 @@ function App() {
             const commonProps = {
                 id: el.id,
                 openSettings: openSettings,
-                onDrag: handleElementUpdate,
+                onDrag: updateElements,
                 onDragEnd: () => {
                 },
-                onRotateCommit: handleElementUpdate,
+                onRotateCommit: updateElements
             }
 
             switch (type) {
@@ -103,7 +108,7 @@ function App() {
                     return null
             }
         })
-    }, [elements])
+    }, [elements, updateElements])
 
     const svgCode = useMemo(() => generateSVGCode(elements, areaWidth), [elements, areaWidth]);
 
@@ -137,6 +142,8 @@ function App() {
             </div>
 
             {customizableElementId && <ElementSettings/>}
+
+
         </>
     )
 }
