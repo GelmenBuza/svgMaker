@@ -27,15 +27,6 @@ export default function DraggablePath({
 
     const {areaWidth, isSelected, toggleSelected} = elementsStore()
 
-    // ❌ УДАЛИЛ этот useEffect — он ломал вращение!
-    // useEffect(() => {
-    //     if (rotate !== 0) {
-    //         const rotated = rotatePoints(currentPointsArr, rotate, cx, cy)
-    //         const newD = pointsArrToString(rotated)
-    //         onRotateCommit?.(id, {d: newD, rotate: 0})
-    //     }
-    // }, [rotate])
-
     const handlePointerDown = (e) => {
         e.preventDefault();
         e.stopPropagation()
@@ -107,15 +98,8 @@ export default function DraggablePath({
         }
     }
 
-    // ✅ Визуальное отображение с поворотом (не меняет d!)
-    const displayPoints = useMemo(() => {
-        if (rotate !== 0) {
-            return rotatePoints(currentPointsArr, rotate, cx, cy);
-        }
-        return currentPointsArr
-    }, [currentPointsArr, rotate, cx, cy]);
-
-    const displayD = useMemo(() => pointsArrToString(displayPoints), [displayPoints])
+    // ❌ УБРАЛ поворот отсюда! d уже содержит повёрнутые точки
+    const displayD = useMemo(() => d, [d])
 
     return (
         <path

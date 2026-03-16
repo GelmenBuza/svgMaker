@@ -6,6 +6,21 @@ export const elementsStore = create((set, get) => ({
     areaWidth: 500,
     areaHeight: 500,
     customizableElementId: null,
+    elementRotation: {},
+
+
+    setElementRotation: (id, angle) => {
+        set((state) => ({
+            elementRotation: {
+                ...state.elementRotation,
+                [id]: angle
+            }
+        }))
+    },
+
+    getElementRotation: (id) => {
+        return get().elementRotation[id] || 0
+    },
 
     toggleSelected: (id) => {
         set((state) => {

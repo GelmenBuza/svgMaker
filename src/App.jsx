@@ -142,8 +142,6 @@ function App() {
             </div>
 
             {customizableElementId && <ElementSettings/>}
-
-
         </>
     )
 }
