@@ -6,6 +6,13 @@ import rotatePoints from "../utils/rotatePoints.js";
 import pointsArrToString from "../utils/pointsArrToString.js";
 import getMinMaxCords from "../utils/getMinMaxCords.js";
 
+// Функция для нормализации угла в диапазон [0, 360)
+const normalizeAngle = (angle) => {
+    angle = angle % 360;
+    if (angle < 0) angle += 360;
+    return angle;
+};
+
 export default function DraggableSettings({
                                               id,
                                               onDrag,
@@ -43,35 +50,22 @@ export default function DraggableSettings({
 
     // ✅ Инициализация БЕЗ вызова setState
     if (prevIdRef.current !== id) {
-        // ✅ Берём из elementRotation (если есть) или из customEll.rotate
-        const storedRotation = getElementRotation(id)
-        visualRotationRef.current = storedRotation !== undefined ? storedRotation : (customEll.rotate || 0)
+        // ✅ Сбрасываем dragAngle при смене элемента
+        setDragAngle(null);
 
-        if (customEll.rotate !== 0) {
-            // ✅ Готовим данные для запекания, но НЕ вызываем onDrag здесь
-            const [origCx, origCy] = getCenterPath(currentPointsArr)
-            const rotated = rotatePoints(currentPointsArr, customEll.rotate, origCx, origCy)
-            const bakedD = pointsArrToString(rotated)
+        // ✅ ВАЖНО: Теперь мы НЕ используем rotate из пропсов для visualRotationRef
+        // visualRotationRef.current должен быть 0, потому что d уже содержит повернутые координаты
+        visualRotationRef.current = 0;
 
-            originalPointsRef.current = rotated
-            const [cx, cy] = getCenterPath(rotated)
-            originalCenterRef.current = [cx, cy]
-            cxRef.current = cx
-            cyRef.current = cy
+        // ✅ Сохраняем оригинальные точки (они уже повернуты в d)
+        originalPointsRef.current = currentPointsArr
+        const [cx, cy] = getCenterPath(currentPointsArr)
+        originalCenterRef.current = [cx, cy]
+        cxRef.current = cx
+        cyRef.current = cy
 
-            // ✅ Сохраняем данные для запекания
-            bakedDataRef.current = {d: bakedD, rotation: visualRotationRef.current}
-            needsBakeRef.current = true
-        } else {
-            originalPointsRef.current = currentPointsArr
-            const [cx, cy] = getCenterPath(currentPointsArr)
-            originalCenterRef.current = [cx, cy]
-            cxRef.current = cx
-            cyRef.current = cy
-
-            bakedDataRef.current = null
-            needsBakeRef.current = false
-        }
+        bakedDataRef.current = null
+        needsBakeRef.current = false
 
         radiusRef.current = (maxY - minY) * 1.3
         prevIdRef.current = id
@@ -80,8 +74,16 @@ export default function DraggableSettings({
     const [cx, cy] = originalCenterRef.current || [0, 0]
     const radius = radiusRef.current || 0
 
-    const currentRotateRad = visualRotationRef.current * Math.PI / 180
-    const circleAngle = dragAngle !== null ? dragAngle : (currentRotateRad - Math.PI / 2)
+    // ✅ Вычисляем угол для круга
+    const getCircleAngle = () => {
+        if (dragAngle !== null) {
+            return dragAngle; // Во время перетаскивания используем текущий угол
+        }
+        // В состоянии покоя круг всегда сверху по центру (фиксированное положение)
+        return -Math.PI / 2; // -90 градусов (вверх от центра)
+    }
+
+    const circleAngle = getCircleAngle();
     const circleX = cx + radius * Math.cos(circleAngle)
     const circleY = cy + radius * Math.sin(circleAngle)
 
@@ -100,10 +102,14 @@ export default function DraggableSettings({
         e.stopPropagation()
         isDraggingRef.current = true
         svgRef.current = e.currentTarget.ownerSVGElement
-        const currentAngle = getAngleFromCenter(e.clientX, e.clientY)
+
+        // При начале перетаскивания устанавливаем угол круга в текущую позицию
+        const startAngle = -Math.PI / 2; // Начинаем с верхней позиции
+        setDragAngle(startAngle)
+
         rotationStartRef.current = {
-            startAngle: currentAngle,
-            initialRotate: visualRotationRef.current
+            startAngle: startAngle,
+            initialRotate: visualRotationRef.current // visualRotationRef.current всегда 0
         }
         e.currentTarget.setPointerCapture?.(e.pointerId)
     }
@@ -112,22 +118,28 @@ export default function DraggableSettings({
         if (!isDraggingRef.current || !svgRef.current) return
         const currentAngle = getAngleFromCenter(e.clientX, e.clientY)
         const {startAngle, initialRotate} = rotationStartRef.current
+
+        // Обновляем визуальный угол круга
         setDragAngle(currentAngle)
 
+        // Вычисляем дельту относительно начального угла (-PI/2)
         let angleDelta = currentAngle - startAngle
         if (angleDelta > Math.PI) angleDelta -= 2 * Math.PI
         else if (angleDelta < -Math.PI) angleDelta += 2 * Math.PI
 
+        // Поворачиваем элемент на ту же дельту
         const degreesDelta = (angleDelta * 180) / Math.PI
-        const newRotate = initialRotate + degreesDelta
+        const newRotate = normalizeAngle(initialRotate + degreesDelta)
 
         visualRotationRef.current = newRotate
 
+        // Поворачиваем точки для отображения
         const rotated = rotatePoints(originalPointsRef.current, newRotate, cxRef.current, cyRef.current)
         const newD = pointsArrToString(rotated)
 
         requestAnimationFrame(() => {
             setElementRotation(id, newRotate)
+            // ✅ Отправляем повернутые точки и угол поворота
             onDrag?.(id, {d: newD, rotate: newRotate})
         })
     }
@@ -135,6 +147,7 @@ export default function DraggableSettings({
     const handleDragEnd = (e) => {
         if (isDraggingRef.current) {
             isDraggingRef.current = false
+            // Сбрасываем dragAngle, чтобы круг вернулся в верхнее положение
             setDragAngle(null)
             requestAnimationFrame(() => {
                 onRotateCommit?.(id, {})
@@ -142,19 +155,6 @@ export default function DraggableSettings({
             e.currentTarget.releasePointerCapture?.(e.pointerId)
         }
     }
-
-    // ✅ Запекаем ПОСЛЕ рендера
-    useEffect(() => {
-        if (needsBakeRef.current && bakedDataRef.current) {
-            const {d, rotation} = bakedDataRef.current
-            // ✅ Сохраняем визуальный угол
-            setElementRotation(id, rotation)
-            // ✅ Запекаем
-            onDrag?.(id, {d, rotate: 0})
-            needsBakeRef.current = false
-            bakedDataRef.current = null
-        }
-    }, [id])
 
     useEffect(() => {
         const handleGlobalUp = () => {
@@ -166,6 +166,14 @@ export default function DraggableSettings({
         window.addEventListener('pointerup', handleGlobalUp)
         return () => window.removeEventListener('pointerup', handleGlobalUp)
     }, [])
+
+    // ✅ Сброс при размонтировании
+    useEffect(() => {
+        return () => {
+            setDragAngle(null);
+            isDraggingRef.current = false;
+        };
+    }, []);
 
     return (
         <>
