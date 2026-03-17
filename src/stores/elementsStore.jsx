@@ -50,6 +50,7 @@ export const elementsStore = create((set, get) => ({
         const id = arg1
         const data = arg2
 
+
         const newElements = state.elements.map(el => {
             if (el.id === id) {
                 const updatedEl = {...el}
@@ -58,6 +59,15 @@ export const elementsStore = create((set, get) => ({
                 }
                 if (data.rotate !== undefined) {
                     updatedEl.rotate = data.rotate;
+                }
+                if (data.fill !== undefined &&  data.fill !== updatedEl.fill) {
+                    updatedEl.fill = data.fill;
+                }
+                if (data.stroke !== undefined && data.stroke !== updatedEl.stroke) {
+                    updatedEl.stroke = data.stroke;
+                }
+                if (data.strokeWidth !== undefined && data.strokeWidth !== updatedEl.strokeWidth) {
+                    updatedEl.strokeWidth = data.strokeWidth;
                 }
                 return updatedEl;
             }

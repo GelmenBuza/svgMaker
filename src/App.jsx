@@ -7,8 +7,8 @@ import DraggablePolyline from "./components/DraggablePolyline.jsx";
 import DraggablePolygon from "./components/DraggablePolygon.jsx";
 import ElementSettings from "./components/ElementsSettings/index.jsx";
 import {elementsStore} from "./stores/elementsStore.jsx";
-import DraggablePath from "./components/tmpDragPath.jsx";
-import DraggableSettings from "./components/tmpDragSet.jsx";
+import DraggablePath from "./components/DraggablePath.jsx";
+import DraggableSettings from "./components/DraggableSettings.jsx";
 
 
 const SVG = ({ell, svgWidth}) => {
@@ -35,7 +35,7 @@ const generateSVGCode = (elements, svgWidth) => {
         const type_ell = el.id.split('_')[0]
         switch (type_ell) {
             case 'path': {
-                return `    <path d="${el.d}" fill="${el.fill}" stroke="${el.stroke}" stroke-width="${el.strokeWidth}" />`;
+                return `    <path \n\td="${el.d}"\n\tfill="${el.fill}"\n\tstroke="${el.stroke}"\n\tstroke-width="${el.strokeWidth}" />`;
             }
             default:
                 console.warn(`Unknown element type: ${type_ell}`)

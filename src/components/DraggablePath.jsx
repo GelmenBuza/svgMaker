@@ -1,8 +1,7 @@
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useMemo, useRef, useState} from "react";
 import {elementsStore} from "../stores/elementsStore.jsx";
 import parsePathData from "../utils/parsePathData.js";
 import getCenterPath from "../utils/getCenterPath.js";
-import rotatePoints from "../utils/rotatePoints.js";
 import pointsArrToString from "../utils/pointsArrToString.js";
 
 export default function DraggablePath({
@@ -11,15 +10,12 @@ export default function DraggablePath({
                                           fill,
                                           stroke,
                                           strokeWidth,
-                                          rotate,
                                           openSettings,
                                           onDrag,
                                           onDragEnd,
-                                          onRotateCommit
                                       }) {
     const [isDragging, setDragging] = useState(false)
     const currentPointsArr = useMemo(() => parsePathData(d), [d])
-
     const [cx, cy] = useMemo(() => getCenterPath(currentPointsArr), [currentPointsArr])
 
     const [startPos, setStartPos] = useState({x: 0, y: 0})
@@ -27,15 +23,6 @@ export default function DraggablePath({
     const svgRef = useRef(null)
 
     const {areaWidth, isSelected, toggleSelected} = elementsStore()
-
-    useEffect(() => {
-        if (rotate !== 0) {
-            const rotated = rotatePoints(currentPointsArr, rotate, cx, cy)
-            const newD = pointsArrToString(rotated)
-
-            onRotateCommit?.(id, {d: newD, rotate: 0})
-        }
-    }, [rotate])
 
     const handlePointerDown = (e) => {
         e.preventDefault();
@@ -67,7 +54,6 @@ export default function DraggablePath({
     }
 
     const checkPosition = (pointsToCheck) => {
-
         for (const obj of pointsToCheck) {
             const cmd = obj.command.toUpperCase()
             if (cmd === 'Z') continue
@@ -109,14 +95,7 @@ export default function DraggablePath({
         }
     }
 
-    const displayPoints = useMemo(() => {
-        if (rotate !== 0) {
-            return rotatePoints(currentPointsArr, rotate, cx, cy);
-        }
-        return currentPointsArr
-    }, [currentPointsArr, rotate, cx, cy]);
-
-    const displayD = useMemo(() => pointsArrToString(displayPoints), [displayPoints])
+    const displayD = useMemo(() => d, [d])
 
     return (
         <path
@@ -131,13 +110,9 @@ export default function DraggablePath({
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
             style={{
-                zIndex: 0,
                 cursor: isDragging ? 'grabbing' : 'grab',
                 pointerEvents: 'all',
             }}
         />
-
     )
 }
-
-

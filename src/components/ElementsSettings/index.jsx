@@ -18,24 +18,23 @@ export default function ElementSettings() {
 
     const handleChange = (field, value) => {
         if (!element) return;
-        let nemValue
+        let newValue
         if (field === "rotate") {
-            nemValue = Math.max(0, Math.min(360, parseInt(value) || 0));
-            handleAngleChange(element.id, nemValue);
+            newValue = Math.max(0, Math.min(360, parseInt(value) || 0));
+            handleAngleChange(element.id, newValue);
             return;
         }
 
         if (["fill", "stroke"].includes(field)) {
-            nemValue = value
+            newValue = value
         } else if (field === "strokeWidth") {
-            nemValue = Math.max(0, parseInt(value) || 0);
+            newValue = Math.max(0, parseInt(value) || 0);
         } else {
-            nemValue = value
+            newValue = value
         }
-
         updateElements(element.id, {
                 ...element,
-                [field]: nemValue,
+                [field]: newValue,
             }
         );
     }
@@ -78,7 +77,11 @@ export default function ElementSettings() {
                 <input type="number" min={0} max={360} value={rotation}
                        onChange={(e) => handleChange('rotate', e.target.value)}/>
             </label>
-
+            <label htmlFor="">
+                Fill:
+                <input type="color" value={element.fill ?? "#000000"}
+                       onChange={(e) => handleChange('fill', e.target.value)}/>
+            </label>
             <label htmlFor="">
                 Stroke:
                 <input type="color" value={element.stroke ?? "#000000"}
