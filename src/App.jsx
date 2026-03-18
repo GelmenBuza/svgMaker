@@ -9,7 +9,7 @@ import ElementSettings from "./components/ElementsSettings/index.jsx";
 import {elementsStore} from "./stores/elementsStore.jsx";
 import DraggablePath from "./components/DraggablePath.jsx";
 import DraggableSettings from "./components/DraggableSettings.jsx";
-import DraggableDots from "./components/DraggableDots.jsx";
+import DraggableDots from "./components/DraggableDots/DraggableDots.jsx";
 
 
 const SVG = ({ell, svgWidth}) => {
@@ -27,7 +27,7 @@ const SVG = ({ell, svgWidth}) => {
                                    onRotateCommit={updateElements}
                 />}
             {ell}
-            <DraggableDots key={`dragDots-${customizableElementId}`} id={customizableElementId}/>
+            <DraggableDots key={`dragDots-${customizableElementId}`} id={customizableElementId} onDrag={updateElements}/>
         </svg>
     )
 }

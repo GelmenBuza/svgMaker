@@ -1,7 +1,8 @@
 import {useMemo, useRef, useState} from "react";
-import {elementsStore} from "../stores/elementsStore.jsx";
-import parsePathData from "../utils/parsePathData.js";
-
+import {elementsStore} from "../../stores/elementsStore.jsx";
+import parsePathData from "../../utils/parsePathData.js";
+import style from './style.module.css'
+import pointsArrToString from "../../utils/pointsArrToString.js";
 
 export default function DraggableDots({
                                           id,
@@ -18,16 +19,17 @@ export default function DraggableDots({
 
     if (!customEll) return null;
 
-    /* const [isDragging, setIsDragging] = useState(false)
+    const [isDragging, setIsDragging] = useState(false)
     const [startPos, setStartPos] = useState({cx: 0, cy: 0})
-    const initialPosRef = useRef({cx, cy})
+    const initialPosRef = useRef(null)
     const svgRef = useRef(null)
 
 
     const handlePointerDown = (e) => {
         e.preventDefault()
         e.stopPropagation()
-
+        const cx = e.target.cx.baseVal.value
+        const cy = e.target.cy.baseVal.value
         setIsDragging(true)
         setStartPos({cx: e.clientX, cy: e.clientY})
         initialPosRef.current = {cx, cy}
@@ -43,12 +45,25 @@ export default function DraggableDots({
         if (ctm) {
             const deltaX = (e.clientX - startPos.cx) / ctm.a
             const deltaY = (e.clientY - startPos.cy) / ctm.d
+            const dotsArr = parsePathData(customEll.d)
 
-            if ((initialPosRef.current.cx + deltaX <= 0 || initialPosRef.current.cy + deltaY <= 0) || (initialPosRef.current.cx + deltaX >= areaWidth - ry || initialPosRef.current.cy + deltaY >= areaWidth - rx)) {
-                return;
+            const movedVertex = +e.target.id.split('-').at(-1)
+            let counter = 0;
+            for (const obj of dotsArr) {
+                if (obj.command.toUpperCase() === 'Z') {
+                    counter++;
+                    continue;
+                }
+                for (let i = 0; i < obj.params.length; i += 2) {
+                    if (counter === movedVertex) {
+                        obj.params[i] = initialPosRef.current.cx + deltaX
+                        obj.params[i + 1] = initialPosRef.current.cy + deltaY
+                    }
+                    counter++
+                }
             }
 
-            onDrag?.(id, {cx: initialPosRef.current.cx + deltaX, cy: initialPosRef.current.cy + deltaY})
+            onDrag?.(id, {d: pointsArrToString(dotsArr)})
         }
     }
 
@@ -60,8 +75,6 @@ export default function DraggableDots({
         }
     }
 
-    const rotation = rotate || 0;
-    */
 
     const dots = parsePathData(customEll.d)
     const normalizedDots = []
@@ -73,30 +86,25 @@ export default function DraggableDots({
         }
 
     }
-    console.log(normalizedDots)
-
 
     return normalizedDots.map((vertex, index) => (
         <ellipse
             key={`${id}-vertex-${index}`}
             id={`${id}-vertex-${index}`}
+            className={style.DraggableDot}
             cx={vertex[0]}
             cy={vertex[1]}
             rx={5}
             ry={5}
-            fill={'rgba(118,118,118,0.4)'}
+            fill={'currentColor'}
             stroke={'transparent'}
             strokeWidth={0}
 
 
-            // onPointerDown={handlePointerDown}
-            // onPointerMove={handlePointerMove}
-            // onPointerUp={handlePointerUp}
-            // onPointerLeave={handlePointerUp}
-            // style={{
-            //     cursor: isDragging ? 'grabbing' : 'grab',
-            //     pointerEvents: 'all',
-            // }}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
         />
     ))
 }

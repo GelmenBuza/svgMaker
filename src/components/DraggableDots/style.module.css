@@ -1,0 +1,7 @@
+.DraggableDot {
+    color: rgba(118, 118, 118, 0.2)
+}
+
+.DraggableDot:hover {
+    color: rgba(118, 118, 118, 0.7)
+}
