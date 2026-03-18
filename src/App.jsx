@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import './App.css'
 import DraggableRect from "./components/DraggableRect.jsx";
 import DraggableLine from "./components/DraggableLine.jsx";
@@ -10,10 +10,12 @@ import {elementsStore} from "./stores/elementsStore.jsx";
 import DraggablePath from "./components/DraggablePath.jsx";
 import DraggableSettings from "./components/DraggableSettings.jsx";
 import DraggableDots from "./components/DraggableDots";
+import CustomContextMenu from "./components/CustomContextMenu/index.jsx";
 
 
-const SVG = ({ell, svgWidth}) => {
+const SVG = ({ell, svgWidth, handleContextMenu}) => {
     const {customizableElementId, updateElements} = elementsStore()
+
     return (
         <svg
             className={'svg-area'}
@@ -27,7 +29,7 @@ const SVG = ({ell, svgWidth}) => {
                                    onRotateCommit={updateElements}
                 />}
             {ell}
-            <DraggableDots key={`dragDots-${customizableElementId}`} id={customizableElementId} onDrag={updateElements}/>
+            <DraggableDots key={`dragDots-${customizableElementId}`} id={customizableElementId} onDrag={updateElements} handleContextMenu={handleContextMenu} />
         </svg>
     )
 }
@@ -57,6 +59,23 @@ function App() {
         setCustomizableElement,
     } = elementsStore()
     const [counter, setCounter] = useState(0)
+    const [menu, setMenu] = useState(null)
+    const menuRef = useRef(null)
+
+    const handleContextMenu = (e) => {
+        e.preventDefault()
+        setMenu({x: e.clientX, y: e.clientY, id: e.currentTarget.id})
+    }
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenu(null)
+            }
+        }
+        document.addEventListener('click', handleClickOutside)
+        return () => document.removeEventListener('click', handleClickOutside)
+    }, [])
 
     const addPath = () => {
         const id = `path_${counter}`
@@ -123,7 +142,7 @@ function App() {
                     </div>
 
 
-                    <SVG ell={renderedElements} svgWidth={areaWidth}/>
+                    <SVG ell={renderedElements} svgWidth={areaWidth} handleContextMenu={handleContextMenu} />
 
                     <h2 style={{cursor: 'pointer', fontWeight: 'bold'}}>SVG код</h2>
                     <pre style={{
@@ -142,7 +161,7 @@ function App() {
                     </pre>
                 </div>
             </div>
-
+            {menu && (<CustomContextMenu menuRef={menuRef} menu={menu} />)}
             {customizableElementId && <ElementSettings/>}
         </>
     )

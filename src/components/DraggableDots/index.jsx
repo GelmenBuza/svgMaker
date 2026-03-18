@@ -1,14 +1,16 @@
-import {useMemo, useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {elementsStore} from "../../stores/elementsStore.jsx";
 import parsePathData from "../../utils/parsePathData.js";
 import style from './style.module.css'
 import pointsArrToString from "../../utils/pointsArrToString.js";
+import CustomContextMenu from "../CustomContextMenu/index.jsx";
 
 export default function DraggableDots({
                                           id,
 
                                           onDrag,
-                                          onDragEnd
+                                          onDragEnd,
+                                          handleContextMenu
                                       }) {
     const {elements} = elementsStore()
 
@@ -23,7 +25,6 @@ export default function DraggableDots({
     const [startPos, setStartPos] = useState({cx: 0, cy: 0})
     const initialPosRef = useRef(null)
     const svgRef = useRef(null)
-
 
     const handlePointerDown = (e) => {
         e.preventDefault()
@@ -84,8 +85,10 @@ export default function DraggableDots({
         for (let i = 0; i < obj.params.length; i += 2) {
             normalizedDots.push([obj.params[i], obj.params[i + 1]])
         }
-
     }
+
+
+
 
     return normalizedDots.map((vertex, index) => (
         <ellipse
@@ -105,6 +108,7 @@ export default function DraggableDots({
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
+            onContextMenu={(e) => handleContextMenu(e)}
         />
     ))
 }
