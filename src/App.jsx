@@ -79,12 +79,13 @@ function App() {
 
     const addPath = () => {
         const id = `path_${counter}`
+        // d: "M 10,90 C 30,90 25,10 50,10 S 70,90 90,90",
 
         const newPathData = {
             id: id,
             type: 'path',
-            d: "M 10,90 C 30,90 25,10 50,10 S 70,90 90,90",
-            fill: '#ffffff',
+            d: "M 20,20 C 20,20 20,20 100,20 C 100,20 100,20 100,100 C 100,100 100,100 20,100 C 20,100 20,100 20,20",
+            fill: 'none',
             stroke: '#000000',
             strokeWidth: 1,
             rotate: 0
