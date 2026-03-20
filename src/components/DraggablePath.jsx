@@ -42,12 +42,16 @@ export default function DraggablePath({
     const initialPosPlusDelta = (deltaX, deltaY) => {
         const result = []
         for (const obj of initialPosRef.current) {
-            const subResult = {command: obj.command, params: []};
-            for (let i = 0; i < obj.params.length; i += 2) {
-                if (i + 1 >= obj.params.length) break;
-                subResult.params.push(obj.params[i] + deltaX);
-                subResult.params.push(obj.params[i + 1] + deltaY);
+            const subResult = {command: obj.command.toUpperCase(), x: obj.x + deltaX, y: obj.y + deltaY};
+
+            if (obj.in) {
+                subResult.in = {x: obj.in.x + deltaX, y: obj.in.y + deltaY};
             }
+
+            if (obj.out) {
+                subResult.out = {x: obj.out.x + deltaX, y: obj.out.y + deltaY};
+            }
+
             result.push(subResult)
         }
         return result
@@ -58,14 +62,7 @@ export default function DraggablePath({
             const cmd = obj.command.toUpperCase()
             if (cmd === 'Z') continue
 
-            for (let i = 0; i < obj.params.length; i += 2) {
-                if (i + 1 >= obj.params.length) continue;
-
-                const x = obj.params[i];
-                const y = obj.params[i + 1];
-
-                if (x < 0 || y < 0 || x > areaWidth || y > areaWidth) return false;
-            }
+            if (obj.x < 0 || obj.y < 0 || obj.x > areaWidth || obj.y > areaWidth) return false;
         }
         return true;
     }

@@ -5,12 +5,9 @@ const getCenterPath = (pointsArr) => {
     for (const obj of pointsArr) {
         const cmd = obj.command.toUpperCase()
         if (cmd === 'Z') continue
-
-        for (let i = 0; i < obj.params.length; i += 2) {
-            xSum += +obj.params[i];
-            ySum += +obj.params[i + 1];
-            count++
-        }
+        xSum += obj.x
+        ySum += obj.y
+        count++
     }
     return count ? [xSum / count, ySum / count] : [0, 0]
 }
