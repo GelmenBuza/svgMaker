@@ -40,7 +40,7 @@ const parsePathData = (d) => {
     const setLastOutHandle = (hx, hy) => {
         if (result.length > 0) {
             const last = result[result.length - 1]
-            if (!last.out) {
+            if (!last.out && last.command !== 'M' && last.command !== 'Z') {
                 last.out = { x: round(hx), y: round(hy) }
             }
         }
@@ -61,31 +61,36 @@ const parsePathData = (d) => {
 
         switch (cmdUpper) {
             case 'M': {
-                // Moveto - первая пара: moveTo, остальные: implicit lineTo
-                let isFirst = true
-                do {
-                    let nx = tokens[++i]
-                    let ny = tokens[++i]
-                    if (isRelative) {
-                        nx += x
-                        ny += y
-                    }
+                // Moveto — берём только первую пару координат.
+                // Дополнительные пары игнорируются (не создаём неявные L).
 
-                    if (isFirst) {
-                        result.push(createPoint('M', nx, ny))
-                        startX = nx
-                        startY = ny
-                        isFirst = false
-                    } else {
-                        setLastOutHandle(x, y)
-                        result.push(createPoint('L', nx, ny, { x: x, y: y }))
-                    }
+                let nx = tokens[++i]
+                let ny = tokens[++i]
 
-                    x = nx
-                    y = ny
-                    lastControlX = x
-                    lastControlY = y
-                } while (i + 1 < tokens.length && typeof tokens[i + 1] === 'number')
+                // Защита от некорректных данных
+                if (nx === undefined || ny === undefined) break
+
+                if (isRelative) {
+                    nx += x
+                    ny += y
+                }
+
+                // Создаём чистую точку M без хендлов (in/out)
+                result.push(createPoint('M', nx, ny))
+
+                // Обновляем состояние парсера
+                startX = nx
+                startY = ny
+                x = nx
+                y = ny
+                lastControlX = x
+                lastControlY = y
+
+                // ⚠️ Пропускаем любые дополнительные координаты,
+                // если они были (чтобы не интерпретировать их как L)
+                while (i + 1 < tokens.length && typeof tokens[i + 1] === 'number') {
+                    i += 2
+                }
                 break
             }
 

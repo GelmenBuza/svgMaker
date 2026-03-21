@@ -32,7 +32,6 @@ export default function DraggablePath({
 
         setDragging(true)
         setStartPos({x: e.clientX, y: e.clientY})
-
         initialPosRef.current = currentPointsArr
         svgRef.current = e.currentTarget.ownerSVGElement
 
@@ -53,6 +52,7 @@ export default function DraggablePath({
             }
 
             result.push(subResult)
+            if (obj.command.toUpperCase() === 'C') console.log(subResult, obj)
         }
         return result
     }
