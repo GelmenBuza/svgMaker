@@ -1,35 +1,40 @@
-
-
 const rotatePoints = (pointsArr, angleDeg, cx, cy) => {
     const angleRad = (angleDeg * Math.PI) / 180;
     const cos = Math.cos(angleRad);
     const sin = Math.sin(angleRad);
 
-    const result = []
+    const rotateCord = (x, y) => {
+        const dx = x - cx;
+        const dy = y - cy;
+        return {
+            x: dx * cos - dy * sin + cx,
+            y: dx * sin + dy * cos + cy
+        };
+    };
+
+    const result = [];
+
     for (const obj of pointsArr) {
-        const cmd = obj.command.toUpperCase()
+        const subResult = { command: obj.command };
 
-        if (cmd === 'Z') continue
+        const rotated = rotateCord(obj.x, obj.y);
+        subResult.x = rotated.x;
+        subResult.y = rotated.y;
 
-        const subResult = {command: obj.command, params: []};
+        if (obj.in) {
+            const rotatedIn = rotateCord(obj.in.x, obj.in.y);
+            subResult.in = { x: rotatedIn.x, y: rotatedIn.y };
+        }
 
-        const x = obj.x;
-        const y = obj.y;
+        if (obj.out) {
+            const rotatedOut = rotateCord(obj.out.x, obj.out.y);
+            subResult.out = { x: rotatedOut.x, y: rotatedOut.y };
+        }
 
-        const dx = x - cx
-        const dy = y - cy
-
-        const rotatedX = dx * cos - dy * sin
-        const rotatedY = dx * sin + dy * cos
-
-        const newX = rotatedX + cx
-        const newY = rotatedY + cy
-
-        subResult.params.push(newX, newY)
-
-        result.push(subResult)
+        result.push(subResult);
     }
-    return result
+
+    return result;
 }
 
 export default rotatePoints;
