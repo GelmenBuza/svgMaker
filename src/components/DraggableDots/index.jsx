@@ -25,6 +25,7 @@ export default function DraggableDots({
     const [startPos, setStartPos] = useState({cx: 0, cy: 0})
     const initialPosRef = useRef(null)
     const svgRef = useRef(null)
+    const dotsArr = useMemo(() => parsePathData(customEll.d), [customEll])
 
     const handlePointerDown = (e) => {
         e.preventDefault()
@@ -46,43 +47,52 @@ export default function DraggableDots({
         if (ctm) {
             const deltaX = (e.clientX - startPos.cx) / ctm.a
             const deltaY = (e.clientY - startPos.cy) / ctm.d
-            const dotsArr = parsePathData(customEll.d)
 
-            const movedVertex = +e.target.id.split('-').at(-1)
-            let counter = 0;
+            if (e.target.id.includes('vertex')) {
+                const movedVertex = +e.target.id.split('-').at(-1)
+                let counter = 0;
 
-            let totalCount = 0
-            for (const obj of dotsArr) {
-                // console.log(obj)
-                if (obj.params) {
-                    totalCount += obj.params.length
-                }
-            }
 
-            for (const obj of dotsArr) {
-                if (obj.command.toUpperCase() === 'Z') {
-                    counter++;
-                    continue;
-                }
-                // console.log('M', dotsArr[0].params[0], dotsArr[0].params[1], '\n', 'last', dotsArr.at(-1).params.at(-2), dotsArr.at(-1).params.at(-1), totalCount/2)
-                // console.log(movedVertex)
-                if (movedVertex === totalCount/2-1 && (dotsArr[0].params[0] === dotsArr.at(-1).params.at(-2) && dotsArr[0].params[1] === dotsArr.at(-1).params.at(-1))) {
-                    dotsArr[0].params[0] = initialPosRef.current.cx + deltaX
-                    dotsArr[0].params[1] = initialPosRef.current.cy + deltaY
-                    dotsArr[dotsArr.length-1].params[dotsArr[dotsArr.length-1].params.length-2] = initialPosRef.current.cx + deltaX
-                    dotsArr.at(dotsArr.length-1).params[dotsArr[dotsArr.length-1].params.length-1] = initialPosRef.current.cy + deltaY
-                    counter++
-                    continue
-                }
-                for (let i = 0; i < obj.params.length; i += 2) {
+                for (const obj of dotsArr) {
+                    if (obj.command.toUpperCase() === 'Z') {
+                        counter++;
+                        continue;
+                    }
+                    if (movedVertex === dotsArr.length - 2 && (dotsArr[0].x === dotsArr.at(-1).x && dotsArr[0].y === dotsArr.at(-1).y)) {
+                        dotsArr[0].x = initialPosRef.current.cx + deltaX
+                        dotsArr[0].y = initialPosRef.current.cy + deltaY
+                        dotsArr[dotsArr.length - 1].x = initialPosRef.current.cx + deltaX
+                        dotsArr[dotsArr.length - 1].y = initialPosRef.current.cy + deltaY
+                        dotsArr[dotsArr.length - 2].x = initialPosRef.current.cx + deltaX
+                        dotsArr[dotsArr.length - 2].y = initialPosRef.current.cy + deltaY
+                        counter++
+                        continue
+                    }
                     if (counter === movedVertex) {
-                        obj.params[i] = initialPosRef.current.cx + deltaX
-                        obj.params[i + 1] = initialPosRef.current.cy + deltaY
+                        obj.x = initialPosRef.current.cx + deltaX
+                        obj.y = initialPosRef.current.cy + deltaY
                     }
                     counter++
                 }
-            }
+            } else {
+                const splitId = e.target.id.split('-')
+                const guideLineIndex = +splitId.at(-1)
+                const type = splitId.at(-2)
 
+                const targetDotIndex = guideLinesArr[guideLineIndex]?.[3]
+
+                if (targetDotIndex !== undefined) {
+                    const obj = dotsArr[targetDotIndex]
+                    if (type === 'in' && obj.in) {
+                        obj.in.x = initialPosRef.current.cx + deltaX
+                        obj.in.y = initialPosRef.current.cy + deltaY
+                    }
+                    if (type === 'out' && obj.out) {
+                        obj.out.x = initialPosRef.current.cx + deltaX
+                        obj.out.y = initialPosRef.current.cy + deltaY
+                    }
+                }
+            }
             onDrag?.(id, {d: pointsArrToString(dotsArr)})
         }
     }
@@ -95,32 +105,62 @@ export default function DraggableDots({
         }
     }
 
-
-    const dots = parsePathData(customEll.d)
-    const normalizedDots = []
-    for (const obj of dots) {
-        if (obj.command.toUpperCase() === 'Z') continue;
-
-
-        for (let i = 0; i < obj.params.length; i += 2) {
-            normalizedDots.push([obj.params[i], obj.params[i + 1]])
+    const vertexArr = []
+    const guideLinesArr = []
+    let dotsIndex = 0
+    const lastIndex =  dotsArr.filter(obj => obj.command.toUpperCase() !== 'Z').length - 1
+    for (const obj of dotsArr) {
+        if (obj.command.toUpperCase() === 'Z') {
+            dotsIndex++
+            continue
         }
+        vertexArr.push([obj.x, obj.y])
+        if (obj.out && dotsIndex !== lastIndex) {
+            guideLinesArr.push([obj.out.x, obj.out.y, 'out', dotsIndex])
+        }
+        if (obj.in) {
+            guideLinesArr.push([obj.in.x, obj.in.y, 'in', dotsIndex])
+        }
+        dotsIndex++
     }
-    // console.log(normalizedDots.length)
+
+    return (
+        <>
+            {vertexArr.map((vertex, index) => {
+                    return (
+                        <ellipse
+                            key={`${id}-vertex-${index}`}
+                            id={`${id}-vertex-${index}`}
+                            className={style.DraggableDot}
+                            cx={vertex[0]}
+                            cy={vertex[1]}
+                            rx={5}
+                            ry={5}
+                            fill={index === 0 ? 'red' : index === vertexArr.length - 1 ? 'green' : 'currentColor'}
+                            stroke={'transparent'}
+                            strokeWidth={0}
 
 
-    return normalizedDots.map((vertex, index) => {
-            if (index !== 0) {
+                            onPointerDown={handlePointerDown}
+                            onPointerMove={handlePointerMove}
+                            onPointerUp={handlePointerUp}
+                            onPointerLeave={handlePointerUp}
+                            onContextMenu={(e) => handleContextMenu(e)}
+                        />
+                    )
+                }
+            )}
+            {guideLinesArr.map((dot, index) => {
                 return (
                     <ellipse
-                        key={`${id}-vertex-${index}`}
-                        id={`${id}-vertex-${index}`}
+                        key={`${id}-guideLine-${dot[2]}-${index}`}
+                        id={`${id}-guideLine-${dot[2]}-${index}`}
                         className={style.DraggableDot}
-                        cx={vertex[0]}
-                        cy={vertex[1]}
+                        cx={dot[0]}
+                        cy={dot[1]}
                         rx={5}
                         ry={5}
-                        fill={index === 0 ? 'red' : index === normalizedDots.length - 1 ? 'green' : 'currentColor'}
+                        fill={'brown'}
                         stroke={'transparent'}
                         strokeWidth={0}
 
@@ -132,8 +172,10 @@ export default function DraggableDots({
                         onContextMenu={(e) => handleContextMenu(e)}
                     />
                 )
+            })
 
             }
-        }
+
+        </>
     )
 }

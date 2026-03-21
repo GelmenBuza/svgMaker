@@ -8,19 +8,11 @@ const getMinMaxCords = (pointsArr) => {
         if (obj.command.toUpperCase() === 'Z') {
             continue
         }
+        result.min[0] = obj.x < result.min[0] ? obj.x : result.min[0]
+        result.min[1] = obj.y < result.min[1] ? obj.y : result.min[1]
 
-        let [minX, minY] = result.min
-        let [maxX, maxY] = result.max
-
-        for (let i = 0; i < obj.params.length; i += 2) {
-            if (minX > obj.params[i]) minX = obj.params[i]
-            if (minY > obj.params[i + 1]) minY = obj.params[i + 1]
-
-            if (maxX < obj.params[i]) maxX = obj.params[i]
-            if (maxY < obj.params[i + 1]) maxY = obj.params[i + 1]
-        }
-        result.min = [minX, minY]
-        result.max = [maxX, maxY]
+        result.max[0] = obj.x > result.max[0] ? obj.x : result.max[0]
+        result.max[1] = obj.y > result.max[1] ? obj.y : result.max[1]
     }
 
     return result;

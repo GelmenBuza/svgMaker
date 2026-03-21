@@ -40,7 +40,7 @@ const parsePathData = (d) => {
     const setLastOutHandle = (hx, hy) => {
         if (result.length > 0) {
             const last = result[result.length - 1]
-            if (!last.out && last.command !== 'M' && last.command !== 'Z') {
+            if (!last.out && last.command !== 'Z') {
                 last.out = { x: round(hx), y: round(hy) }
             }
         }

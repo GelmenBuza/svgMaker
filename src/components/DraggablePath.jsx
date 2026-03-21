@@ -52,7 +52,6 @@ export default function DraggablePath({
             }
 
             result.push(subResult)
-            if (obj.command.toUpperCase() === 'C') console.log(subResult, obj)
         }
         return result
     }
