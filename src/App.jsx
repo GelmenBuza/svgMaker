@@ -1,10 +1,5 @@
 import {useEffect, useMemo, useRef, useState} from 'react'
 import './App.css'
-import DraggableRect from "./components/DraggableRect.jsx";
-import DraggableLine from "./components/DraggableLine.jsx";
-import DraggableCircle from "./components/DraggableCircle.jsx";
-import DraggablePolyline from "./components/DraggablePolyline.jsx";
-import DraggablePolygon from "./components/DraggablePolygon.jsx";
 import ElementSettings from "./components/ElementsSettings/index.jsx";
 import {elementsStore} from "./stores/elementsStore.jsx";
 import DraggablePath from "./components/DraggablePath.jsx";

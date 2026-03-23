@@ -42,7 +42,15 @@ export default function CustomContextMenu({menuRef, menu}) {
             className={style['menu']}
         >
             <span>Тип точки:{currentCommand}</span>
-
+            <label htmlFor="">
+                <input type="radio" name='angleType'/> Линейный
+            </label>
+            <label htmlFor="">
+                <input type="radio" name='angleType'/> test
+            </label>
+            <label htmlFor="">
+                <input type="radio" name='angleType'/> test
+            </label>
         </div>
     )
 }
