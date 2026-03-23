@@ -39,7 +39,7 @@ const generateSVGCode = (elements, svgWidth) => {
         const type_ell = el.id.split('_')[0]
         switch (type_ell) {
             case 'path': {
-                return `    <path \n\td="${el.d}"\n\tfill="${el.fill}"\n\tstroke="${el.stroke}"\n\tstroke-width="${el.strokeWidth}" />`;
+                return `    <path \n\td="${el.d}"\n\tfill="${el.fill}"\n\tstroke="${el.stroke}"\n\tstroke-width="${el.strokeWidth}"/>`;
             }
             default:
                 console.warn(`Unknown element type: ${type_ell}`)
@@ -80,11 +80,12 @@ function App() {
     const addPath = () => {
         const id = `path_${counter}`
         // d: "M 10,90 C 30,90 25,10 50,10 S 70,90 90,90",
+        // d: "M 20,20 C 20,20 20,20 100,20 C 100,20 100,20 100,100 C 100,100 100,100 20,100 C 20,100 20,100 20,20 Z",
 
         const newPathData = {
             id: id,
             type: 'path',
-            d: "M 20,20 C 20,20 20,20 100,20 C 100,20 100,20 100,100 C 100,100 100,100 20,100 C 20,100 20,100 20,20 Z",
+            d: "M 20,20 C 20,20 20,20 100,20 L 100,100 C 100,100 100,100 20,100 C 20,100 20,100 20,20 Z",
             fill: 'none',
             stroke: '#000000',
             strokeWidth: 1,
@@ -154,7 +155,11 @@ function App() {
                         borderRadius: '6px',
                         overflow: 'auto',
                         fontSize: '13px',
-                        lineHeight: '1.4'
+                        lineHeight: '1.4',
+                        maxWidth: "60vw",
+                        whiteSpace: 'pre-wrap',
+                        wordWrap: 'break-word',
+                        overflowWrap: 'break-word'
                     }}>
                         <code>
                             {svgCode}

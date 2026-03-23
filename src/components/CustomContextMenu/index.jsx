@@ -4,6 +4,19 @@ import {elementsStore} from "../../stores/elementsStore.jsx";
 import parsePathData from "../../utils/parsePathData.js";
 
 
+const getCurrentCommand = (index, dotsArr) => {
+    let dotCommand = null
+    let counter = 0
+    for (const obj of dotsArr) {
+        if (obj.command.toUpperCase() === 'Z') continue;
+        if (counter === index) {
+            dotCommand = obj.command
+        }
+        counter++
+    }
+    return dotCommand
+}
+
 export default function CustomContextMenu({menuRef, menu}) {
     const {elements, customizableElementId} = elementsStore();
 
@@ -12,28 +25,12 @@ export default function CustomContextMenu({menuRef, menu}) {
         [elements, customizableElementId]
     )
 
-    console.log(menu.id)
-
     const vertexIndex = +menu.id.split('-').at(-1)
-
 
     const dotsArr = parsePathData(currentEl.d)
 
-    let counter = 0
-    let dotCommand = null
-    for (const obj of dotsArr) {
-        if (obj.command.toUpperCase() === 'Z') continue;
-        for (let i = 0; i < obj.params.length; i += 2) {
-            if (vertexIndex === counter) {
-                console.log(vertexIndex, counter, i, obj)
-                counter++
-                dotCommand = obj.command
-                break
-            }
-            console.log(i)
-            counter++
-        }
-    }
+    const currentCommand = getCurrentCommand(vertexIndex, dotsArr)
+
 
     return (
         <div
@@ -44,7 +41,7 @@ export default function CustomContextMenu({menuRef, menu}) {
             }}
             className={style['menu']}
         >
-            <span>Тип точки:{dotCommand}</span>
+            <span>Тип точки:{currentCommand}</span>
 
         </div>
     )
