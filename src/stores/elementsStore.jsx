@@ -57,7 +57,6 @@ export const elementsStore = create((set, get) => ({
             }
 
             if (data.d && !data.points) {
-                console.log("Передалась d")
                 updatedEl.d = data.d;
                 updatedEl.points = parsePathData(data.d);
             }
