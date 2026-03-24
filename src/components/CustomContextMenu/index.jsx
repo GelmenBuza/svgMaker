@@ -11,7 +11,6 @@ const getCurrentType = (index, dotsArr) => {
     for (const obj of dotsArr) {
         if (obj.command.toUpperCase() === 'Z') continue;
         if (counter === index) {
-            dotCommand = obj.command
             dotType = obj.type
         }
         counter++
@@ -19,22 +18,38 @@ const getCurrentType = (index, dotsArr) => {
     return dotType
 }
 
-const changeType = (index, dotsArr, value, setType) => {
-    console.log(index, dotsArr, value)
+const changeType = (index, dotsArr, e, setType, update) => {
+    const value = e.target.value
+    switch (value) {
+        case 'line':
+            dotsArr[index] = {...dotsArr[index], in: {x: dotsArr[index].x, y: dotsArr[index].y}}
+            break
+        case 'cusp':
+            dotsArr[index] = {...dotsArr[index], in: {x: dotsArr[index].x + dotsArr[index].x*0.05, y: dotsArr[index].y + dotsArr[index].y*0.05}}
+            break
+        case 'smooth':
+            dotsArr[index] = {...dotsArr[index], in: {x: dotsArr[index].x + dotsArr[index].x*0.05, y: dotsArr[index].y + dotsArr[index].y*0.05}}
+            break
+        case 'symmetric':
+            dotsArr[index] = {...dotsArr[index], in: {x: dotsArr[index].x + dotsArr[index].x*0.05, y: dotsArr[index].y + dotsArr[index].y*0.05}}
+    }
     dotsArr[index].type = value
+    update(dotsArr)
     setType(value)
-    console.log(index, dotsArr, value)
+    console.log(index, dotsArr[index], value)
 }
 
 export default function CustomContextMenu({menuRef, menu}) {
-    const {elements, customizableElementId} = elementsStore();
+    const {elements, customizableElementId, updateElements} = elementsStore();
     const currentEl = useMemo(() =>
             elements.find(elem => elem.id === customizableElementId),
         [elements, customizableElementId]
     )
     const vertexIndex = +menu.id.split('-').at(-1)
-    const dotsArrRef = useRef(() => parsePathData(currentEl.d))
-    const [type, setType] = useState(getCurrentType(vertexIndex, dotsArrRef.current()))
+    const dotsArrRef = useRef(elements.points)
+
+    console.log(elements)
+    const [type, setType] = useState(getCurrentType(vertexIndex, dotsArrRef.current))
 
 
 
@@ -55,7 +70,7 @@ export default function CustomContextMenu({menuRef, menu}) {
                 {type === 'line' ?
                     <input type="radio" name='angleType' value={'line'} checked/> :
                     <input type="radio" name='angleType' value={'line'}
-                           onChange={(e) => changeType(vertexIndex, dotsArrRef.current(), e.target.value, setType)}/>
+                           onChange={(e) => changeType(vertexIndex, dotsArrRef.current(), e, setType, updateElements)}/>
                 }
                 line
             </label>
@@ -63,7 +78,7 @@ export default function CustomContextMenu({menuRef, menu}) {
                 {type === 'cusp' ?
                     <input type="radio" name='angleType' value={'cusp'} checked/> :
                     <input type="radio" name='angleType' value={'cusp'}
-                           onChange={(e) => changeType(vertexIndex, dotsArrRef.current(), e.target.value, setType)}/>
+                           onChange={(e) => changeType(vertexIndex, dotsArrRef.current(), e, setType, updateElements)}/>
                 }
                 cusp
             </label>
@@ -71,7 +86,7 @@ export default function CustomContextMenu({menuRef, menu}) {
                 {type === 'smooth' ?
                     <input type="radio" name='angleType' value={'smooth'} checked/> :
                     <input type="radio" name='angleType' value={'smooth'}
-                           onChange={(e) => changeType(vertexIndex, dotsArrRef.current(), e.target.value, setType)}/>
+                           onChange={(e) => changeType(vertexIndex, dotsArrRef.current(), e, setType, updateElements)}/>
                 }
                 smooth
             </label>
@@ -79,7 +94,7 @@ export default function CustomContextMenu({menuRef, menu}) {
                 {type === 'symmetric' ?
                     <input type="radio" name='angleType' value={'symmetric'} checked/> :
                     <input type="radio" name='angleType' value={'symmetric'}
-                           onChange={(e) => changeType(vertexIndex, dotsArrRef.current(), e.target.value, setType)}/>
+                           onChange={(e) => changeType(vertexIndex, dotsArrRef.current(), e, setType, updateElements)}/>
                 }
                 symmetric
             </label>

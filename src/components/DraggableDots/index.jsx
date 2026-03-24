@@ -153,8 +153,8 @@ export default function DraggableDots({
             {guideLinesArr.map((dot, index) => {
                 return (
                     <ellipse
-                        key={`${id}-guideLine-${dot[2]}-${index}`}
-                        id={`${id}-guideLine-${dot[2]}-${index}`}
+                        key={`${id}-vNum=${dot.at(-1)}-guideLine-${dot[2]}-${index}`}
+                        id={`${id}-vNum=${dot.at(-1)}-guideLine-${dot[2]}-${index}`}
                         className={style.DraggableDot}
                         cx={dot[0]}
                         cy={dot[1]}

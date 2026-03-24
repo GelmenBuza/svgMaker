@@ -74,7 +74,7 @@ export const elementsStore = create((set, get) => ({
 
             return updatedEl;
         });
-
+        console.log(newElements);
         return { elements: newElements };
     }),
 
