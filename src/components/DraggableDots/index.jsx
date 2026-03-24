@@ -169,7 +169,7 @@ export default function DraggableDots({
                         onPointerMove={handlePointerMove}
                         onPointerUp={handlePointerUp}
                         onPointerLeave={handlePointerUp}
-                        onContextMenu={(e) => handleContextMenu(e)}
+                        onContextMenu={(e) => e.preventDefault()}
                     />
                 )
             })
