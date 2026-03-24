@@ -93,7 +93,7 @@ export default function DraggableDots({
                     }
                 }
             }
-            onDrag?.(id, {d: pointsArrToString(dotsArr)})
+            onDrag?.(id, {points: dotsArr})
         }
     }
 

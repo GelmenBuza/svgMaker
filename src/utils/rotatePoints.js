@@ -15,7 +15,7 @@ const rotatePoints = (pointsArr, angleDeg, cx, cy) => {
     const result = [];
 
     for (const obj of pointsArr) {
-        const subResult = { command: obj.command };
+        const subResult = { command: obj.command, type: obj.type };
 
         const rotated = rotateCord(obj.x, obj.y);
         subResult.x = rotated.x;

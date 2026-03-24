@@ -137,11 +137,9 @@ export default function DraggableSettings({
         visualRotationRef.current = newRotate
 
         const rotated = rotatePoints(originalPointsRef.current, newRotate, cxRef.current, cyRef.current)
-        const newD = pointsArrToString(rotated)
-
         requestAnimationFrame(() => {
             setElementRotation(id, newRotate)
-            onDrag?.(id, {d: newD, rotate: newRotate})
+            onDrag?.(id, {points: rotated, rotate: newRotate})
         })
     }
 

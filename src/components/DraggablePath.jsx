@@ -41,7 +41,7 @@ export default function DraggablePath({
     const initialPosPlusDelta = (deltaX, deltaY) => {
         const result = []
         for (const obj of initialPosRef.current) {
-            const subResult = {command: obj.command.toUpperCase(), x: obj.x + deltaX, y: obj.y + deltaY};
+            const subResult = {command: obj.command.toUpperCase(), x: obj.x + deltaX, y: obj.y + deltaY, type: obj.type};
 
             if (obj.in) {
                 subResult.in = {x: obj.in.x + deltaX, y: obj.in.y + deltaY};
@@ -77,8 +77,7 @@ export default function DraggablePath({
             const newPos = initialPosPlusDelta(deltaX, deltaY)
 
             if (checkPosition(newPos)) {
-                const newD = pointsArrToString(newPos)
-                onDrag?.(id, {d: newD})
+                onDrag?.(id, {points: newPos})
             }
         }
     }

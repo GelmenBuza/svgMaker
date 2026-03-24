@@ -104,9 +104,7 @@ function App() {
                 id: el.id,
                 openSettings: openSettings,
                 onDrag: updateElements,
-                onDragEnd: () => {
-                },
-                onRotateCommit: updateElements
+                onDragEnd: () => {},
             }
 
             switch (type) {
