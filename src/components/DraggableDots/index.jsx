@@ -71,6 +71,19 @@ export default function DraggableDots({
                     if (counter === movedVertex) {
                         obj.x = initialPosRef.current.cx + deltaX
                         obj.y = initialPosRef.current.cy + deltaY
+                        if (obj.type === 'line') {
+                            console.log(obj)
+                            if (obj.in) {
+                                console.log('in')
+                                obj.in.x = initialPosRef.current.cx + deltaX
+                                obj.in.y = initialPosRef.current.cy + deltaY
+                            }
+                            if (obj.out) {
+                                console.log('out')
+                                obj.out.x = initialPosRef.current.cx + deltaX
+                                obj.out.y = initialPosRef.current.cy + deltaY
+                            }
+                        }
                     }
                     counter++
                 }
@@ -108,18 +121,19 @@ export default function DraggableDots({
     const vertexArr = []
     const guideLinesArr = []
     let dotsIndex = 0
-    const lastIndex =  dotsArr.filter(obj => obj.command.toUpperCase() !== 'Z').length - 1
+    const lastIndex = dotsArr.filter(obj => obj.command.toUpperCase() !== 'Z').length - 1
     for (const obj of dotsArr) {
         if (obj.command.toUpperCase() === 'Z') {
             dotsIndex++
             continue
         }
+        const vType = obj.type
         vertexArr.push([obj.x, obj.y])
         if (obj.out && dotsIndex !== lastIndex) {
-            guideLinesArr.push([obj.out.x, obj.out.y, 'out', dotsIndex])
+            guideLinesArr.push([obj.out.x, obj.out.y, 'out', vType, dotsIndex])
         }
         if (obj.in) {
-            guideLinesArr.push([obj.in.x, obj.in.y, 'in', dotsIndex])
+            guideLinesArr.push([obj.in.x, obj.in.y, 'in', vType, dotsIndex])
         }
         dotsIndex++
     }
@@ -151,27 +165,29 @@ export default function DraggableDots({
                 }
             )}
             {guideLinesArr.map((dot, index) => {
-                return (
-                    <ellipse
-                        key={`${id}-vNum=${dot.at(-1)}-guideLine-${dot[2]}-${index}`}
-                        id={`${id}-vNum=${dot.at(-1)}-guideLine-${dot[2]}-${index}`}
-                        className={style.DraggableDot}
-                        cx={dot[0]}
-                        cy={dot[1]}
-                        rx={5}
-                        ry={5}
-                        fill={'brown'}
-                        stroke={'transparent'}
-                        strokeWidth={0}
+                if (dot.at(-2) !== 'line') {
+                    return (
+                        <ellipse
+                            key={`${id}-vNum=${dot.at(-1)}-guideLine-${dot[2]}-${index}`}
+                            id={`${id}-vNum=${dot.at(-1)}-guideLine-${dot[2]}-${index}`}
+                            className={style.DraggableDot}
+                            cx={dot[0]}
+                            cy={dot[1]}
+                            rx={5}
+                            ry={5}
+                            fill={'brown'}
+                            stroke={'transparent'}
+                            strokeWidth={0}
 
 
-                        onPointerDown={handlePointerDown}
-                        onPointerMove={handlePointerMove}
-                        onPointerUp={handlePointerUp}
-                        onPointerLeave={handlePointerUp}
-                        onContextMenu={(e) => e.preventDefault()}
-                    />
-                )
+                            onPointerDown={handlePointerDown}
+                            onPointerMove={handlePointerMove}
+                            onPointerUp={handlePointerUp}
+                            onPointerLeave={handlePointerUp}
+                            onContextMenu={(e) => e.preventDefault()}
+                        />
+                    )
+                }
             })
 
             }

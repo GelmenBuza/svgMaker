@@ -6,6 +6,7 @@ import DraggablePath from "./components/DraggablePath.jsx";
 import DraggableSettings from "./components/DraggableSettings.jsx";
 import DraggableDots from "./components/DraggableDots";
 import CustomContextMenu from "./components/CustomContextMenu/index.jsx";
+import parsePathData from "./utils/parsePathData.js";
 
 
 const SVG = ({ell, svgWidth, handleContextMenu}) => {
@@ -76,18 +77,22 @@ function App() {
         const id = `path_${counter}`
         // d: "M 10,90 C 30,90 25,10 50,10 S 70,90 90,90",
         // d: "M 20,20 C 20,20 20,20 100,20 L 100,100 C 100,100 100,100 20,100 C 20,100 20,100 20,20 Z",
+        const d = "M 20,20 C 35,20 85,20 100,20 C 100,35 100,85 100,100 C 85,100 35,100 20,100 C 20,85 20,35 20,20 Z"
 
         const newPathData = {
             id: id,
             type: 'path',
-            d: "M 20,20 C 35,20 85,20 100,20 C 100,35 100,85 100,100 C 85,100 35,100 20,100 C 20,85 20,35 20,20 Z",
-            fill: 'none',
+            d,
+            points: parsePathData(d),
+            fill: 'transparent',
             stroke: '#000000',
             strokeWidth: 1,
             rotate: 0
         }
+        console.log(newPathData)
 
         updateElements((prev) => [...prev, newPathData])
+        // updateElements(id, newPathData)
         setCounter(prev => prev + 1)
     }
 

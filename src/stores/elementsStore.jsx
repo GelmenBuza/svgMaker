@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import {create} from "zustand";
 import parsePathData from "../utils/parsePathData.js";
 import pointsArrToString from "../utils/pointsArrToString.js";
 
@@ -34,23 +34,49 @@ export const elementsStore = create((set, get) => ({
         });
     },
 
-    clearSelected: () => set({ selected: [] }),
+    clearSelected: () => set({selected: []}),
 
     isSelected: (id) => get().selected.includes(id),
 
     updateElements: (arg1, arg2) => set((state) => {
         if (typeof arg1 === 'function') {
-            return { elements: arg1(state.elements) };
+            return {elements: arg1(state.elements)};
         }
 
         const id = arg1;
         const data = arg2;
-
+        // if (state.elements.length === 0) {
+        //     if (!data.id) return;
+        //     const updatedEl = {}
+        //
+        //     if (data.points) {
+        //         updatedEl.points = data.points;
+        //         updatedEl.d = pointsArrToString(data.points);
+        //     }
+        //
+        //     if (data.d && !data.points) {
+        //         updatedEl.d = data.d;
+        //         updatedEl.points = parsePathData(data.d);
+        //     }
+        //
+        //     if (data.rotate !== undefined) updatedEl.rotate = data.rotate;
+        //     if (data.fill !== undefined && data.fill !== updatedEl.fill) {
+        //         updatedEl.fill = data.fill;
+        //     }
+        //     if (data.stroke !== undefined && data.stroke !== updatedEl.stroke) {
+        //         updatedEl.stroke = data.stroke;
+        //     }
+        //     if (data.strokeWidth !== undefined && data.strokeWidth !== updatedEl.strokeWidth) {
+        //         updatedEl.strokeWidth = data.strokeWidth;
+        //     }
+        //
+        //     state.elements.push(updatedEl)
+        //     return;
+        // }
         const newElements = state.elements.map(el => {
             if (el.id !== id) return el;
 
-            const updatedEl = { ...el };
-
+            const updatedEl = {...el}
             if (data.points) {
                 updatedEl.points = data.points;
                 updatedEl.d = pointsArrToString(data.points);
@@ -74,15 +100,14 @@ export const elementsStore = create((set, get) => ({
 
             return updatedEl;
         });
-        console.log(newElements);
-        return { elements: newElements };
+        return {elements: newElements};
     }),
 
     updateElementPoints: (id, points) => {
         set((state) => ({
             elements: state.elements.map(el =>
                 el.id === id
-                    ? { ...el, points, d: pointsArrToString(points) }
+                    ? {...el, points, d: pointsArrToString(points)}
                     : el
             )
         }));
@@ -115,7 +140,7 @@ export const elementsStore = create((set, get) => ({
                 if (el.id !== elementId || !el.points?.[pointIndex]) return el;
 
                 const newPoints = [...el.points];
-                newPoints[pointIndex] = { ...newPoints[pointIndex], ...updates };
+                newPoints[pointIndex] = {...newPoints[pointIndex], ...updates};
 
                 return {
                     ...el,
@@ -145,7 +170,7 @@ export const elementsStore = create((set, get) => ({
     setCustomizableElement: (id) => {
         set((state) => {
             const elementExists = state.elements.some(el => el.id === id);
-            return { customizableElementId: elementExists ? id : null };
+            return {customizableElementId: elementExists ? id : null};
         });
     },
 
