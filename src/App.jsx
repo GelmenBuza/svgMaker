@@ -25,7 +25,8 @@ const SVG = ({ell, svgWidth, handleContextMenu}) => {
                                    onRotateCommit={updateElements}
                 />}
             {ell}
-            <DraggableDots key={`dragDots-${customizableElementId}`} id={customizableElementId} onDrag={updateElements} handleContextMenu={handleContextMenu} />
+            <DraggableDots key={`dragDots-${customizableElementId}`} id={customizableElementId} onDrag={updateElements}
+                           handleContextMenu={handleContextMenu}/>
         </svg>
     )
 }
@@ -109,7 +110,8 @@ function App() {
                 id: el.id,
                 openSettings: openSettings,
                 onDrag: updateElements,
-                onDragEnd: () => {},
+                onDragEnd: () => {
+                },
             }
 
             switch (type) {
@@ -142,7 +144,7 @@ function App() {
                     </div>
 
 
-                    <SVG ell={renderedElements} svgWidth={areaWidth} handleContextMenu={handleContextMenu} />
+                    <SVG ell={renderedElements} svgWidth={areaWidth} handleContextMenu={handleContextMenu}/>
 
                     <h2 style={{cursor: 'pointer', fontWeight: 'bold'}}>SVG код</h2>
                     <pre style={{
@@ -165,7 +167,7 @@ function App() {
                     </pre>
                 </div>
             </div>
-            {menu && (<CustomContextMenu menuRef={menuRef} menu={menu} />)}
+            {menu && (<CustomContextMenu menuRef={menuRef} menu={menu}/>)}
             {customizableElementId && <ElementSettings/>}
         </>
     )

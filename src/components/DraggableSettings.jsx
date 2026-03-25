@@ -3,7 +3,6 @@ import {elementsStore} from "../stores/elementsStore.jsx";
 import parsePathData from "../utils/parsePathData.js";
 import getCenterPath from "../utils/getCenterPath.js";
 import rotatePoints from "../utils/rotatePoints.js";
-import pointsArrToString from "../utils/pointsArrToString.js";
 import getMinMaxCords from "../utils/getMinMaxCords.js";
 
 const normalizeAngle = (angle) => {

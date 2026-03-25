@@ -2,7 +2,6 @@ import {useMemo, useRef, useState} from "react";
 import {elementsStore} from "../stores/elementsStore.jsx";
 import parsePathData from "../utils/parsePathData.js";
 import getCenterPath from "../utils/getCenterPath.js";
-import pointsArrToString from "../utils/pointsArrToString.js";
 
 export default function DraggablePath({
                                           id,

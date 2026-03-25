@@ -1,12 +1,9 @@
 import style from './style.module.css'
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useMemo,useState} from "react";
 import {elementsStore} from "../../stores/elementsStore.jsx";
-import parsePathData from "../../utils/parsePathData.js";
-
 
 const getCurrentType = (index, dotsArr) => {
     console.log(dotsArr)
-    let dotCommand = null
     let dotType = null
     let counter = 0
     for (const obj of dotsArr) {
@@ -23,12 +20,20 @@ const changeType = (id, index, dotsArr, e, setType, update) => {
     const value = e.target.value
     switch (value) {
         case 'line':
-            dotsArr[index] = {...dotsArr[index], in: {x: dotsArr[index].x, y: dotsArr[index].y}, out: {x: dotsArr[index].x, y: dotsArr[index].y}}
+            dotsArr[index] = {
+                ...dotsArr[index],
+                in: {x: dotsArr[index].x, y: dotsArr[index].y},
+                out: {x: dotsArr[index].x, y: dotsArr[index].y}
+            }
             break
         case 'cusp':
         case 'smooth':
         case 'symmetric':
-            dotsArr[index] = {...dotsArr[index], in: {x: dotsArr[index].x - 10, y: dotsArr[index].y + 10}, out: {x: dotsArr[index].x + 10, y: dotsArr[index].y - 10}}
+            dotsArr[index] = {
+                ...dotsArr[index],
+                in: {x: dotsArr[index].x - 10, y: dotsArr[index].y + 10},
+                out: {x: dotsArr[index].x + 10, y: dotsArr[index].y - 10}
+            }
             break
     }
     dotsArr[index].type = value

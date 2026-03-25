@@ -45,34 +45,6 @@ export const elementsStore = create((set, get) => ({
 
         const id = arg1;
         const data = arg2;
-        // if (state.elements.length === 0) {
-        //     if (!data.id) return;
-        //     const updatedEl = {}
-        //
-        //     if (data.points) {
-        //         updatedEl.points = data.points;
-        //         updatedEl.d = pointsArrToString(data.points);
-        //     }
-        //
-        //     if (data.d && !data.points) {
-        //         updatedEl.d = data.d;
-        //         updatedEl.points = parsePathData(data.d);
-        //     }
-        //
-        //     if (data.rotate !== undefined) updatedEl.rotate = data.rotate;
-        //     if (data.fill !== undefined && data.fill !== updatedEl.fill) {
-        //         updatedEl.fill = data.fill;
-        //     }
-        //     if (data.stroke !== undefined && data.stroke !== updatedEl.stroke) {
-        //         updatedEl.stroke = data.stroke;
-        //     }
-        //     if (data.strokeWidth !== undefined && data.strokeWidth !== updatedEl.strokeWidth) {
-        //         updatedEl.strokeWidth = data.strokeWidth;
-        //     }
-        //
-        //     state.elements.push(updatedEl)
-        //     return;
-        // }
         const newElements = state.elements.map(el => {
             if (el.id !== id) return el;
 

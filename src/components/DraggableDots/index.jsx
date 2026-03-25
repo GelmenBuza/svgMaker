@@ -1,9 +1,7 @@
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useMemo, useRef, useState} from "react";
 import {elementsStore} from "../../stores/elementsStore.jsx";
 import parsePathData from "../../utils/parsePathData.js";
 import style from './style.module.css'
-import pointsArrToString from "../../utils/pointsArrToString.js";
-import CustomContextMenu from "../CustomContextMenu/index.jsx";
 
 export default function DraggableDots({
                                           id,
