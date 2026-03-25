@@ -72,14 +72,11 @@ export default function DraggableDots({
                         obj.x = initialPosRef.current.cx + deltaX
                         obj.y = initialPosRef.current.cy + deltaY
                         if (obj.type === 'line') {
-                            console.log(obj)
                             if (obj.in) {
-                                console.log('in')
                                 obj.in.x = initialPosRef.current.cx + deltaX
                                 obj.in.y = initialPosRef.current.cy + deltaY
                             }
                             if (obj.out) {
-                                console.log('out')
                                 obj.out.x = initialPosRef.current.cx + deltaX
                                 obj.out.y = initialPosRef.current.cy + deltaY
                             }
@@ -92,7 +89,7 @@ export default function DraggableDots({
                 const guideLineIndex = +splitId.at(-1)
                 const type = splitId.at(-2)
 
-                const targetDotIndex = guideLinesArr[guideLineIndex]?.[3]
+                const targetDotIndex = guideLinesArr[guideLineIndex]?.at(-1)
 
                 if (targetDotIndex !== undefined) {
                     const obj = dotsArr[targetDotIndex]
