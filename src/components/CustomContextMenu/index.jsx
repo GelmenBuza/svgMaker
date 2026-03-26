@@ -27,7 +27,19 @@ const changeType = (id, index, dotsArr, e, setType, update) => {
             }
             break
         case 'cusp':
+            dotsArr[index] = {
+                ...dotsArr[index],
+                in: {x: dotsArr[index].x - 20, y: dotsArr[index].y + 20},
+                out: {x: dotsArr[index].x + 20, y: dotsArr[index].y - 10}
+            }
+            break
         case 'smooth':
+            dotsArr[index] = {
+                ...dotsArr[index],
+                in: {x: dotsArr[index].x - 15, y: dotsArr[index].y + 15},
+                out: {x: dotsArr[index].x + 10, y: dotsArr[index].y - 10}
+            }
+            break
         case 'symmetric':
             dotsArr[index] = {
                 ...dotsArr[index],
@@ -36,6 +48,7 @@ const changeType = (id, index, dotsArr, e, setType, update) => {
             }
             break
     }
+    console.log(dotsArr[index])
     dotsArr[index].type = value
     update(id, {points: dotsArr})
     setType(value)

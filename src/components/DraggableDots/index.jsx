@@ -28,11 +28,22 @@ export default function DraggableDots({
     const handlePointerDown = (e) => {
         e.preventDefault()
         e.stopPropagation()
-        const cx = e.target.cx.baseVal.value
-        const cy = e.target.cy.baseVal.value
+        let objIndex;
+        if (e.target.id.includes('vertex')) {
+            objIndex = +e.target.id.split('-').at(-1)
+        } else {
+            objIndex = +e.target.id.split('-')[1].split('=')[1]
+        }
+        console.log('test', dotsArr[objIndex])
+        initialPosRef.current = {
+            cx: dotsArr[objIndex].x,
+            cy: dotsArr[objIndex].y,
+            in: dotsArr[objIndex].in,
+            out: dotsArr[objIndex].out,
+            type: dotsArr[objIndex].type
+        }
         setIsDragging(true)
         setStartPos({cx: e.clientX, cy: e.clientY})
-        initialPosRef.current = {cx, cy}
         svgRef.current = e.currentTarget.ownerSVGElement
 
         e.currentTarget.setPointerCapture?.(e.pointerId)
@@ -69,16 +80,25 @@ export default function DraggableDots({
                     if (counter === movedVertex) {
                         obj.x = initialPosRef.current.cx + deltaX
                         obj.y = initialPosRef.current.cy + deltaY
-                        if (obj.type === 'line') {
-                            if (obj.in) {
-                                obj.in.x = initialPosRef.current.cx + deltaX
-                                obj.in.y = initialPosRef.current.cy + deltaY
-                            }
-                            if (obj.out) {
-                                obj.out.x = initialPosRef.current.cx + deltaX
-                                obj.out.y = initialPosRef.current.cy + deltaY
-                            }
+                        // if (obj.type === 'line') {
+                        if (obj.in) {
+                            obj.in.x = initialPosRef.current.in.x + deltaX
+                            obj.in.y = initialPosRef.current.in.y + deltaY
                         }
+                        if (obj.out) {
+                            obj.out.x = initialPosRef.current.out.x + deltaX
+                            obj.out.y = initialPosRef.current.out.y + deltaY
+                        }
+                        // } else {
+                        //     if (obj.in) {
+                        //         obj.in.x = initialPosRef.current.cx + deltaX
+                        //         obj.in.y = initialPosRef.current.cy + deltaY
+                        //     }
+                        //     if (obj.out) {
+                        //         obj.out.x = initialPosRef.current.cx + deltaX
+                        //         obj.out.y = initialPosRef.current.cy + deltaY
+                        //     }
+                        // }
                     }
                     counter++
                 }
@@ -91,14 +111,79 @@ export default function DraggableDots({
 
                 if (targetDotIndex !== undefined) {
                     const obj = dotsArr[targetDotIndex]
-                    if (type === 'in' && obj.in) {
-                        obj.in.x = initialPosRef.current.cx + deltaX
-                        obj.in.y = initialPosRef.current.cy + deltaY
+                    if (initialPosRef.current.type === 'symmetric') {
+                        if (e.target.id.split('-').at(-2) === 'in') {
+                            obj.in.x = initialPosRef.current.in.x + deltaX
+                            obj.in.y = initialPosRef.current.in.y + deltaY
+                            obj.out.x = initialPosRef.current.out.x - deltaX
+                            obj.out.y = initialPosRef.current.out.y - deltaY
+                        } else if (e.target.id.split('-').at(-2) === 'out') {
+                            obj.in.x = initialPosRef.current.in.x - deltaX
+                            obj.in.y = initialPosRef.current.in.y - deltaY
+                            obj.out.x = initialPosRef.current.out.x + deltaX
+                            obj.out.y = initialPosRef.current.out.y + deltaY
+                        }
+
+                    } else if (initialPosRef.current.type === 'smooth') {
+                        console.log(obj)
+                        const anchorX = obj.x;
+                        const anchorY = obj.y;
+                        const isDraggingIn = e.target.id.split('-').at(-2) === 'in';
+
+                        // 1. Сначала обновляем позицию той ручки, которую тащим
+                        if (isDraggingIn) {
+                            obj.in.x = initialPosRef.current.in.x + deltaX;
+                            obj.in.y = initialPosRef.current.in.y + deltaY;
+                        } else if (obj.out) {
+                            obj.out.x = initialPosRef.current.out.x + deltaX;
+                            obj.out.y = initialPosRef.current.out.y + deltaY;
+                        }
+
+                        // 2. Вычисляем вектор от якоря к активной (новой) ручке
+                        // Нам нужно знать угол, под которым теперь стоит активная ручка
+                        const activeHandle = isDraggingIn ? obj.in : obj.out;
+                        const dx = activeHandle.x - anchorX;
+                        const dy = activeHandle.y - anchorY;
+
+                        // Расстояние от якоря до активной ручки (чтобы нормализовать вектор)
+                        const distanceActive = Math.sqrt(dx * dx + dy * dy);
+
+                        // 3. Обновляем противоположную ручку
+                        if (distanceActive > 0.1) { // Защита от деления на ноль, если ручка прямо в центре
+                            // Берем исходную длину ПРОТИВОПОЛОЖНОЙ ручки из референса
+                            // Это важно: мы не меняем длину второй ручки, только угол
+                            const oppositeType = isDraggingIn ? 'out' : 'in';
+                            const initialOpp = initialPosRef.current[oppositeType];
+                            const initialAnchor = initialPosRef.current;
+
+                            const lenOpp = Math.sqrt(
+                                Math.pow(initialOpp.x - initialAnchor.x, 2) + Math.pow(initialOpp.y - initialAnchor.y, 2)
+                            );
+
+                            // Вычисляем новые координаты: Якорь - (НормализованныйВектор * ИсходнаяДлина)
+                            // Минус, потому что противоположная ручка должна быть с другой стороны
+                            console.log(obj,oppositeType)
+                            obj[oppositeType].x = anchorX - (dx / distanceActive) * lenOpp;
+                            obj[oppositeType].y = anchorY - (dy / distanceActive) * lenOpp;
+                        } else {
+                            // Если активную ручку притащили в самый центр узла,
+                            // противоположную тоже схлопываем в центр
+                            const oppositeType = isDraggingIn ? 'out' : 'in';
+                            obj[oppositeType].x = anchorX;
+                            obj[oppositeType].y = anchorY;
+                        }
+                    } else {
+                        if (type === 'in' && obj.in) {
+                            obj.in.x = initialPosRef.current.in.x + deltaX
+                            obj.in.y = initialPosRef.current.in.y + deltaY
+                        }
+                        if (type === 'out' && obj.out) {
+                            obj.out.x = initialPosRef.current.out.x + deltaX
+                            obj.out.y = initialPosRef.current.out.y + deltaY
+                        }
                     }
-                    if (type === 'out' && obj.out) {
-                        obj.out.x = initialPosRef.current.cx + deltaX
-                        obj.out.y = initialPosRef.current.cy + deltaY
-                    }
+
+
                 }
             }
             onDrag?.(id, {points: dotsArr})
