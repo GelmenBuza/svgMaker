@@ -34,14 +34,14 @@ export default function DraggableDots({
         } else {
             objIndex = +e.target.id.split('-')[1].split('=')[1]
         }
-        console.log('test', dotsArr[objIndex])
         initialPosRef.current = {
             cx: dotsArr[objIndex].x,
             cy: dotsArr[objIndex].y,
-            in: dotsArr[objIndex].in,
-            out: dotsArr[objIndex].out,
+            in: {...dotsArr[objIndex].in},
+            out: {...dotsArr[objIndex].out},
             type: dotsArr[objIndex].type
         }
+        console.log('test', dotsArr[objIndex], initialPosRef.current)
         setIsDragging(true)
         setStartPos({cx: e.clientX, cy: e.clientY})
         svgRef.current = e.currentTarget.ownerSVGElement
@@ -130,7 +130,6 @@ export default function DraggableDots({
                         const anchorY = obj.y;
                         const isDraggingIn = e.target.id.split('-').at(-2) === 'in';
 
-                        // 1. Сначала обновляем позицию той ручки, которую тащим
                         if (isDraggingIn) {
                             obj.in.x = initialPosRef.current.in.x + deltaX;
                             obj.in.y = initialPosRef.current.in.y + deltaY;
@@ -139,35 +138,25 @@ export default function DraggableDots({
                             obj.out.y = initialPosRef.current.out.y + deltaY;
                         }
 
-                        // 2. Вычисляем вектор от якоря к активной (новой) ручке
-                        // Нам нужно знать угол, под которым теперь стоит активная ручка
                         const activeHandle = isDraggingIn ? obj.in : obj.out;
                         const dx = activeHandle.x - anchorX;
                         const dy = activeHandle.y - anchorY;
 
-                        // Расстояние от якоря до активной ручки (чтобы нормализовать вектор)
                         const distanceActive = Math.sqrt(dx * dx + dy * dy);
 
-                        // 3. Обновляем противоположную ручку
-                        if (distanceActive > 0.1) { // Защита от деления на ноль, если ручка прямо в центре
-                            // Берем исходную длину ПРОТИВОПОЛОЖНОЙ ручки из референса
-                            // Это важно: мы не меняем длину второй ручки, только угол
+                        if (distanceActive > 0.1) {
                             const oppositeType = isDraggingIn ? 'out' : 'in';
+                            console.log(initialPosRef.current[oppositeType])
                             const initialOpp = initialPosRef.current[oppositeType];
                             const initialAnchor = initialPosRef.current;
+                            console.log(initialOpp, initialAnchor)
 
                             const lenOpp = Math.sqrt(
-                                Math.pow(initialOpp.x - initialAnchor.x, 2) + Math.pow(initialOpp.y - initialAnchor.y, 2)
+                                Math.pow(initialOpp.x - initialAnchor.cx, 2) + Math.pow(initialOpp.y - initialAnchor.cy, 2)
                             );
-
-                            // Вычисляем новые координаты: Якорь - (НормализованныйВектор * ИсходнаяДлина)
-                            // Минус, потому что противоположная ручка должна быть с другой стороны
-                            console.log(obj,oppositeType)
                             obj[oppositeType].x = anchorX - (dx / distanceActive) * lenOpp;
                             obj[oppositeType].y = anchorY - (dy / distanceActive) * lenOpp;
                         } else {
-                            // Если активную ручку притащили в самый центр узла,
-                            // противоположную тоже схлопываем в центр
                             const oppositeType = isDraggingIn ? 'out' : 'in';
                             obj[oppositeType].x = anchorX;
                             obj[oppositeType].y = anchorY;
