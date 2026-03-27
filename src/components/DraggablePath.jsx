@@ -12,6 +12,7 @@ export default function DraggablePath({
                                           openSettings,
                                           onDrag,
                                           onDragEnd,
+                                          handleContextMenu,
                                       }) {
     const [isDragging, setDragging] = useState(false)
     const currentPointsArr = useMemo(() => parsePathData(d), [d])
@@ -40,7 +41,12 @@ export default function DraggablePath({
     const initialPosPlusDelta = (deltaX, deltaY) => {
         const result = []
         for (const obj of initialPosRef.current) {
-            const subResult = {command: obj.command.toUpperCase(), x: obj.x + deltaX, y: obj.y + deltaY, type: obj.type};
+            const subResult = {
+                command: obj.command.toUpperCase(),
+                x: obj.x + deltaX,
+                y: obj.y + deltaY,
+                type: obj.type
+            };
 
             if (obj.in) {
                 subResult.in = {x: obj.in.x + deltaX, y: obj.in.y + deltaY};
@@ -103,6 +109,7 @@ export default function DraggablePath({
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
+            onContextMenu={e => handleContextMenu(e)}
             style={{
                 cursor: isDragging ? 'grabbing' : 'grab',
                 pointerEvents: 'all',

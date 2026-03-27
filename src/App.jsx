@@ -61,7 +61,7 @@ function App() {
 
     const handleContextMenu = (e) => {
         e.preventDefault()
-        setMenu({x: e.clientX, y: e.clientY, id: e.currentTarget.id})
+        setMenu({x: e.clientX, y: e.clientY, id: e.currentTarget.id, svg: e.currentTarget.ownerSVGElement})
     }
 
     useEffect(() => {
@@ -93,7 +93,6 @@ function App() {
         console.log(newPathData)
 
         updateElements((prev) => [...prev, newPathData])
-        // updateElements(id, newPathData)
         setCounter(prev => prev + 1)
     }
 
@@ -112,6 +111,7 @@ function App() {
                 onDrag: updateElements,
                 onDragEnd: () => {
                 },
+                handleContextMenu: handleContextMenu,
             }
 
             switch (type) {
@@ -167,7 +167,7 @@ function App() {
                     </pre>
                 </div>
             </div>
-            {menu && (<CustomContextMenu menuRef={menuRef} menu={menu}/>)}
+            {menu && (<CustomContextMenu data={{menuRef, menu}}/>)}
             {customizableElementId && <ElementSettings/>}
         </>
     )

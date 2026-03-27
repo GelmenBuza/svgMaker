@@ -41,7 +41,6 @@ export default function DraggableDots({
             out: {...dotsArr[objIndex].out},
             type: dotsArr[objIndex].type
         }
-        console.log('test', dotsArr[objIndex], initialPosRef.current)
         setIsDragging(true)
         setStartPos({cx: e.clientX, cy: e.clientY})
         svgRef.current = e.currentTarget.ownerSVGElement
@@ -80,7 +79,6 @@ export default function DraggableDots({
                     if (counter === movedVertex) {
                         obj.x = initialPosRef.current.cx + deltaX
                         obj.y = initialPosRef.current.cy + deltaY
-                        // if (obj.type === 'line') {
                         if (obj.in) {
                             obj.in.x = initialPosRef.current.in.x + deltaX
                             obj.in.y = initialPosRef.current.in.y + deltaY
@@ -89,16 +87,6 @@ export default function DraggableDots({
                             obj.out.x = initialPosRef.current.out.x + deltaX
                             obj.out.y = initialPosRef.current.out.y + deltaY
                         }
-                        // } else {
-                        //     if (obj.in) {
-                        //         obj.in.x = initialPosRef.current.cx + deltaX
-                        //         obj.in.y = initialPosRef.current.cy + deltaY
-                        //     }
-                        //     if (obj.out) {
-                        //         obj.out.x = initialPosRef.current.cx + deltaX
-                        //         obj.out.y = initialPosRef.current.cy + deltaY
-                        //     }
-                        // }
                     }
                     counter++
                 }
@@ -125,7 +113,6 @@ export default function DraggableDots({
                         }
 
                     } else if (initialPosRef.current.type === 'smooth') {
-                        console.log(obj)
                         const anchorX = obj.x;
                         const anchorY = obj.y;
                         const isDraggingIn = e.target.id.split('-').at(-2) === 'in';
@@ -146,10 +133,8 @@ export default function DraggableDots({
 
                         if (distanceActive > 0.1) {
                             const oppositeType = isDraggingIn ? 'out' : 'in';
-                            console.log(initialPosRef.current[oppositeType])
                             const initialOpp = initialPosRef.current[oppositeType];
                             const initialAnchor = initialPosRef.current;
-                            console.log(initialOpp, initialAnchor)
 
                             const lenOpp = Math.sqrt(
                                 Math.pow(initialOpp.x - initialAnchor.cx, 2) + Math.pow(initialOpp.y - initialAnchor.cy, 2)
@@ -171,8 +156,6 @@ export default function DraggableDots({
                             obj.out.y = initialPosRef.current.out.y + deltaY
                         }
                     }
-
-
                 }
             }
             onDrag?.(id, {points: dotsArr})
@@ -258,9 +241,7 @@ export default function DraggableDots({
                     )
                 }
             })
-
             }
-
         </>
     )
 }
