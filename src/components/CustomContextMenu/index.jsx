@@ -22,23 +22,68 @@ const getSVGPoint = (svg, clientX, clientY) => {
     return pt.matrixTransform(svg.getScreenCTM().inverse());
 }
 
-const addNewVertex = (e, menu, currentEl) => {
-    e.preventDefault()
-    const svg = menu.svg
-    const pt = getSVGPoint(svg, menu.x, menu.y)
-    const {id, points} = currentEl
-    console.log('Все точки: ',points)
-    let pointPrev = points[0]
-    let pointNext = points[1]
-    for (let i = 2; i < points.length; i++) {
-        if (pointPrev.x < points[i].x && points[i].x < pt.x) {
-            pointPrev = points[i]
-            console.log(points[i], pt)
-            if (pointNext.x > points[i].x && pointNext > pt.x) {
+const distanceToSegment = (px, py, x1, y1, x2, y2) => {
+    const A = px - x1
+    const B = py - y1
+    const C = x2 - x1
+    const D = y2 - y1
 
-            }
+    const dot = A * C + B * D
+    const lenSq = C * C + D * D
+    let param = -1
+
+    if (lenSq !== 0) param = dot / lenSq
+
+    let xx, yy
+
+    if (param < 0) {
+        xx = x1
+        yy = y1
+    } else if (param > 1) {
+        xx = x2
+        yy = y2
+    } else {
+        xx = x1 + param * C
+        yy = y1 + param * D
+    }
+
+    const dx = px - xx
+    const dy = py - yy
+    return Math.sqrt(dx * dx + dy * dy)
+}
+
+const addNewVertex = (e, menu, currentEl, update) => {
+    e.preventDefault()
+    const pt = getSVGPoint(menu.svg, menu.x, menu.y)
+    const { points } = currentEl
+    let minDistance = Infinity
+    let insertIndex = 1
+
+    for (let i = 0; i < points.length - 1; i++) {
+        if (points[i].command === 'Z' || points[i + 1]?.command === 'Z') continue
+
+        const p1 = points[i]
+        const p2 = points[i + 1]
+        const distance = distanceToSegment(pt.x, pt.y, p1.x, p1.y, p2.x, p2.y)
+
+        if (distance < minDistance) {
+            minDistance = distance
+            insertIndex = i + 1
         }
     }
+
+    const newPoint = {
+        command: 'c',
+        x: pt.x,
+        y: pt.y,
+        type: 'cusp',
+        in: { x: pt.x , y: pt.y },
+        out: { x: pt.x, y: pt.y }
+    }
+
+    points.splice(insertIndex, 0, newPoint)
+
+    update(currentEl.id, {points})
 }
 
 
@@ -148,7 +193,7 @@ export default function CustomContextMenu({data}) {
                 className={style['menu']}
             >
                 <label htmlFor="">
-                    <button onClick={(e) => addNewVertex(e, menu, currentEl)}>Добавить узел</button>
+                    <button onClick={(e) => addNewVertex(e, menu, currentEl, updateElements)}>Добавить узел</button>
                 </label>
             </div>
         )
