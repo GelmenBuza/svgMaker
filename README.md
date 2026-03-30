@@ -1,16 +1,102 @@
-# React + Vite
+# svg_maker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Веб-приложение на **React** для создания и редактирования векторных **SVG path** на плоскости фиксированного размера: добавление готовых фигур, режим пошагового рисования (DIY), перетаскивание контуров и узлов, поворот, контекстное меню узлов и вывод готового SVG-кода.
 
-Currently, two official plugins are available:
+## Стек
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+| Технология | Назначение |
+|------------|------------|
+| [React 19](https://react.dev/) | UI |
+| [Vite 7](https://vite.dev/) | Сборка и dev-сервер |
+| [Zustand](https://github.com/pmndrs/zustand) | Глобальное состояние элементов и настроек |
 
-## React Compiler
+## Возможности
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Path** — добавить путь с предзаданной кривой Безье (замкнутый контур).
+- **DIY** — создать пустой путь и в режиме «рисования» кликами по SVG добавлять узлы; замкнуть контур кликом рядом с первой точкой; кнопка завершения режима.
+- **Перетаскивание пути** — захват за контур (`DraggablePath`), с ограничением в пределах области (`areaWidth`).
+- **Редактирование узлов** — при выбранном элементе отображаются маркеры вершин и ручек Безье (`DraggableDots`); двойной клик по пути открывает панель настроек.
+- **Поворот** — зелёный маркер и рамка ограничивающего прямоугольника (`DraggableSettings`); числовой ввод угла в панели.
+- **Контекстное меню** — тип узла (line, cusp, smooth, symmetric) и добавление нового узла на сегменте.
+- **Экспорт** — блок «SVG код» с разметкой текущей сцены (пути с `d`, `fill`, `stroke`, `stroke-width`).
 
-## Expanding the ESLint configuration
+## Требования
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- [Node.js](https://nodejs.org/) с npm (рекомендуется актуальная LTS).
+
+## Установка и запуск
+
+```bash
+npm install
+```
+
+| Команда | Описание |
+|---------|----------|
+| `npm run dev` | Dev-сервер с HMR (по умолчанию Vite подскажет URL, обычно `http://localhost:5173`) |
+| `npm run build` | Production-сборка в каталог `dist/` |
+| `npm run preview` | Локальный просмотр собранного приложения |
+| `npm run lint` | Проверка ESLint |
+
+## Структура проекта
+
+```
+svg_maker/
+├── index.html              # Точка входа HTML
+├── vite.config.js          # Конфигурация Vite
+├── eslint.config.js        # Flat config ESLint
+├── todo.md                 # Заметки по аудиту кода (при наличии)
+├── src/
+│   ├── main.jsx            # createRoot, StrictMode
+│   ├── App.jsx             # Макет, SVG-область, кнопки, DIY-логика, генерация кода
+│   ├── App.css             # Стили корневого layout
+│   ├── index.css           # Глобальные стили
+│   ├── stores/
+│   │   └── elementsStore.jsx   # Zustand: elements, areaWidth, updateElements, выделение и др.
+│   ├── components/
+│   │   ├── DraggablePath.jsx       # Интерактивный <path>
+│   │   ├── DraggableSettings.jsx   # UI поворота и bbox
+│   │   ├── DraggableDots/          # Вершины и ручки Безье
+│   │   ├── CustomContextMenu/      # ПКМ по узлу / по пути
+│   │   └── ElementsSettings/       # Панель цветов, толщины, rotate
+│   └── utils/
+│       ├── parsePathData.js        # Строка d → массив узлов
+│       ├── pointsArrToString.js    # Массив узлов → строка d (M/L/C/Z)
+│       ├── getCenterPath.js        # Центр по среднему вершин
+│       ├── getMinMaxCords.js       # Ограничивающий прямоугольник
+│       └── rotatePoints.js         # Поворот массива точек вокруг (cx, cy)
+```
+
+## Модель данных элемента (path)
+
+В сторе каждый элемент описывается примерно так:
+
+| Поле | Описание |
+|------|----------|
+| `id` | Уникальный идентификатор, например `path_0` |
+| `type` | `'path'` |
+| `d` | Атрибут `d` SVG path |
+| `points` | Распарсенное представление (см. `parsePathData`) |
+| `fill`, `stroke`, `strokeWidth` | Визуальные атрибуты |
+| `rotate` | Угол в градусах (используется в настройках и при обновлении из редактора) |
+| `isDIY` | Флаг пути, созданного в режиме DIY (опционально) |
+
+Обновление данных идёт через `updateElements`: либо функция `(prev) => next`, либо пара `(id, patch)` с полями вроде `points`, `d`, `rotate`, `fill`, `stroke`, `strokeWidth`.
+
+## Поток работы пользователя
+
+1. Нажать **Path** или **DIY** для создания контура.
+2. При необходимости в DIY — кликать по области SVG, затем замкнуть контур или нажать **Finish DIY**.
+3. Двойной клик по пути — открыть панель **ElementsSettings** (цвета, толщина, числовой поворот).
+4. При активном «настраиваемом» элементе — двигать путь целиком, тянуть узлы/ручки, крутить зелёный маркер поворота.
+5. ПКМ по пути или узлу — контекстное меню.
+6. Скопировать или использовать сгенерированный фрагмент из блока **SVG код**.
+
+## Ограничения и замечания
+
+- Экспорт в `generateSVGCode` ориентирован на тип `path`; другие типы элементов в разметку не попадают.
+- Парсер `parsePathData` поддерживает основной набор команд; сложные дуги `A` упрощаются при представлении в узлах.
+- Известные технические долги и предложения по правкам собраны в **`todo.md`** (если файл присутствует в репозитории).
+
+## Лицензия
+
+Проект помечен как `private` в `package.json`; уточните лицензию у автора при распространении.
