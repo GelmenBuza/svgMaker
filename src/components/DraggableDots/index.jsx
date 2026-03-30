@@ -16,7 +16,6 @@ export default function DraggableDots({
             elements.find(elem => elem.id === id),
         [elements, id]
     )
-
     if (!customEll) return null;
 
     const [isDragging, setIsDragging] = useState(false)
