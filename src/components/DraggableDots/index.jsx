@@ -68,10 +68,37 @@ export default function DraggableDots({
                     if (movedVertex === dotsArr.length - 2 && (dotsArr[0].x === dotsArr.at(-1).x && dotsArr[0].y === dotsArr.at(-1).y)) {
                         dotsArr[0].x = initialPosRef.current.cx + deltaX
                         dotsArr[0].y = initialPosRef.current.cy + deltaY
+                        if (dotsArr[0].in) {
+                            dotsArr[0].in.x = initialPosRef.current.in.x + deltaX
+                            dotsArr[0].in.y = initialPosRef.current.in.y + deltaY
+                        }
+                        if (dotsArr[0].out) {
+                            dotsArr[0].out.x = initialPosRef.current.out.x + deltaX
+                            dotsArr[0].out.y = initialPosRef.current.out.y + deltaY
+                        }
+
                         dotsArr[dotsArr.length - 1].x = initialPosRef.current.cx + deltaX
                         dotsArr[dotsArr.length - 1].y = initialPosRef.current.cy + deltaY
+                        if (dotsArr[dotsArr.length - 1].in) {
+                            dotsArr[dotsArr.length - 1].in.x = initialPosRef.current.in.x + deltaX
+                            dotsArr[dotsArr.length - 1].in.y = initialPosRef.current.in.y + deltaY
+                        }
+                        if (dotsArr[dotsArr.length - 1].out) {
+                            dotsArr[dotsArr.length - 1].out.x = initialPosRef.current.out.x + deltaX
+                            dotsArr[dotsArr.length - 1].out.y = initialPosRef.current.out.y + deltaY
+                        }
+
                         dotsArr[dotsArr.length - 2].x = initialPosRef.current.cx + deltaX
                         dotsArr[dotsArr.length - 2].y = initialPosRef.current.cy + deltaY
+                        if (dotsArr[dotsArr.length - 2].in) {
+                            dotsArr[dotsArr.length - 2].in.x = initialPosRef.current.in.x + deltaX
+                            dotsArr[dotsArr.length - 2].in.y = initialPosRef.current.in.y + deltaY
+                        }
+                        if (dotsArr[dotsArr.length - 2].out) {
+                            dotsArr[dotsArr.length - 2].out.x = initialPosRef.current.out.x + deltaX
+                            dotsArr[dotsArr.length - 2].out.y = initialPosRef.current.out.y + deltaY
+                        }
+
                         counter++
                         continue
                     }
@@ -98,6 +125,71 @@ export default function DraggableDots({
 
                 if (targetDotIndex !== undefined) {
                     const obj = dotsArr[targetDotIndex]
+                    if (dotsArr[0].x === obj.x && dotsArr[0].y === obj.y) {
+
+                        if (initialPosRef.current.type === 'symmetric') {
+                            if (e.target.id.split('-').at(-2) === 'in') {
+                                obj.in.x = initialPosRef.current.in.x + deltaX
+                                obj.in.y = initialPosRef.current.in.y + deltaY
+                                obj.out.x = initialPosRef.current.out.x - deltaX
+                                obj.out.y = initialPosRef.current.out.y - deltaY
+                                dotsArr[0].out.x = initialPosRef.current.out.x - deltaX
+                                dotsArr[0].out.y = initialPosRef.current.out.y - deltaY
+                            } else if (e.target.id.split('-').at(-2) === 'out') {
+                                obj.in.x = initialPosRef.current.in.x - deltaX
+                                obj.in.y = initialPosRef.current.in.y - deltaY
+                                obj.out.x = initialPosRef.current.out.x + deltaX
+                                obj.out.y = initialPosRef.current.out.y + deltaY
+                                dotsArr[0].out.x = initialPosRef.current.out.x + deltaX
+                                dotsArr[0].out.y = initialPosRef.current.out.y + deltaY
+
+                            }
+
+                        } else if (initialPosRef.current.type === 'smooth') {
+                            const anchorX = obj.x;
+                            const anchorY = obj.y;
+                            const isDraggingIn = e.target.id.split('-').at(-2) === 'in';
+
+                            if (isDraggingIn) {
+                                obj.in.x = initialPosRef.current.in.x + deltaX;
+                                obj.in.y = initialPosRef.current.in.y + deltaY;
+                            } else if (obj.out) {
+                                obj.out.x = initialPosRef.current.out.x + deltaX;
+                                obj.out.y = initialPosRef.current.out.y + deltaY;
+                            }
+
+                            const activeHandle = isDraggingIn ? obj.in : obj.out;
+                            const dx = activeHandle.x - anchorX;
+                            const dy = activeHandle.y - anchorY;
+
+                            const distanceActive = Math.sqrt(dx * dx + dy * dy);
+
+                            if (distanceActive > 0.1) {
+                                const oppositeType = isDraggingIn ? 'out' : 'in';
+                                const initialOpp = initialPosRef.current[oppositeType];
+                                const initialAnchor = initialPosRef.current;
+
+                                const lenOpp = Math.sqrt(
+                                    Math.pow(initialOpp.x - initialAnchor.cx, 2) + Math.pow(initialOpp.y - initialAnchor.cy, 2)
+                                );
+                                obj[oppositeType].x = anchorX - (dx / distanceActive) * lenOpp;
+                                obj[oppositeType].y = anchorY - (dy / distanceActive) * lenOpp;
+                            } else {
+                                const oppositeType = isDraggingIn ? 'out' : 'in';
+                                obj[oppositeType].x = anchorX;
+                                obj[oppositeType].y = anchorY;
+                            }
+                        } else {
+                            if (type === 'in' && obj.in) {
+                                obj.in.x = initialPosRef.current.in.x + deltaX
+                                obj.in.y = initialPosRef.current.in.y + deltaY
+                            }
+                            if (type === 'out' && obj.out) {
+                                obj.out.x = initialPosRef.current.out.x + deltaX
+                                obj.out.y = initialPosRef.current.out.y + deltaY
+                            }
+                        }
+                    }
                     if (initialPosRef.current.type === 'symmetric') {
                         if (e.target.id.split('-').at(-2) === 'in') {
                             obj.in.x = initialPosRef.current.in.x + deltaX

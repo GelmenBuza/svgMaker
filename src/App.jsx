@@ -149,14 +149,35 @@ function App() {
         let newPoints = [...(currentPath.points || [])];
         let newD = '';
 
+        const firstPoint = newPoints[0];
+        const isNearStart = firstPoint &&
+            Math.abs(firstPoint.x - x) <= 2 &&
+            Math.abs(firstPoint.y - y) <= 2;
+
         if (newPoints.length === 0) {
             const newPoint = {
                 x, y,
                 command: 'M',
-                out: {x, y}
+                out: { x, y }
             };
             newPoints.push(newPoint);
             newD = `M ${x} ${y}`;
+
+        } else if (isNearStart && newPoints.length > 1) {
+            const lastIdx = newPoints.length - 1;
+            const prevPoint = newPoints[lastIdx];
+
+            newPoints[lastIdx] = {
+                ...prevPoint,
+                out: { x: firstPoint.x, y: firstPoint.y }
+            };
+
+            newD = currentPath.d + ` C ${prevPoint.out.x} ${prevPoint.out.y}, ${firstPoint.x} ${firstPoint.y}, ${firstPoint.x} ${firstPoint.y} Z`;
+
+            newPoints[0] = { ...firstPoint, closed: true };
+
+            setIsTrackingMode(false);
+            setActiveDIYPathId(null);
 
         } else {
             const lastIdx = newPoints.length - 1;
@@ -164,14 +185,14 @@ function App() {
 
             newPoints[lastIdx] = {
                 ...prevPoint,
-                out: {x: prevPoint.x, y: prevPoint.y}
+                out: { x: prevPoint.x, y: prevPoint.y }
             };
 
             const newPoint = {
                 x, y,
                 command: 'C',
-                in: {x, y},
-                out: {x, y}
+                in: { x, y },
+                out: { x, y }
             };
             newPoints.push(newPoint);
 

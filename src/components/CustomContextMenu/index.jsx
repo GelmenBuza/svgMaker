@@ -89,6 +89,54 @@ const addNewVertex = (e, menu, currentEl, update) => {
 
 const changeType = (id, index, dotsArr, e, setType, update) => {
     const value = e.target.value
+    if ((dotsArr[0].x === dotsArr[index].x) && (dotsArr[0].y === dotsArr[index].y)) {
+        switch (value) {
+            case 'line':
+                dotsArr[index] = {
+                    ...dotsArr[index],
+                    in: {x: dotsArr[index].x, y: dotsArr[index].y},
+                    out: {x: dotsArr[index].x, y: dotsArr[index].y}
+                }
+                dotsArr[0] = {
+                    ...dotsArr[0],
+                    out: {x: dotsArr[0].x, y: dotsArr[0].y},
+                }
+                break
+            case 'cusp':
+                dotsArr[index] = {
+                    ...dotsArr[index],
+                    in: {x: dotsArr[index].x - 20, y: dotsArr[index].y + 20},
+                    out: {x: dotsArr[index].x + 20, y: dotsArr[index].y - 10}
+                }
+                dotsArr[0] = {
+                    ...dotsArr[0],
+                    out: {x: dotsArr[0].x + 20, y: dotsArr[0].y - 10},
+                }
+                break
+            case 'smooth':
+                dotsArr[index] = {
+                    ...dotsArr[index],
+                    in: {x: dotsArr[index].x - 15, y: dotsArr[index].y + 15},
+                    out: {x: dotsArr[index].x + 10, y: dotsArr[index].y - 10}
+                }
+                dotsArr[0] = {
+                    ...dotsArr[0],
+                    out: {x: dotsArr[0].x + 10, y: dotsArr[0].y - 10},
+                }
+                break
+            case 'symmetric':
+                dotsArr[index] = {
+                    ...dotsArr[index],
+                    in: {x: dotsArr[index].x - 10, y: dotsArr[index].y + 10},
+                    out: {x: dotsArr[index].x + 10, y: dotsArr[index].y - 10}
+                }
+                dotsArr[0] = {
+                    ...dotsArr[0],
+                    out: {x: dotsArr[0].x + 10, y: dotsArr[0].y - 10},
+                }
+                break
+        }
+    }
     switch (value) {
         case 'line':
             dotsArr[index] = {
