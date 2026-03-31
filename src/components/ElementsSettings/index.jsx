@@ -54,7 +54,7 @@ export default function ElementSettings() {
         const deltaAngle = newAngel - currentRotation;
 
         if (deltaAngle === 0) {
-            updateElements([{...targetElement, rotate: newAngel}]);
+            updateElements([targetElement.id, {rotate: newAngel}]);
             return;
         }
 

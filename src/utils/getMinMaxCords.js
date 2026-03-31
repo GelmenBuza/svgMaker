@@ -1,6 +1,6 @@
 
 const getMinMaxCords = (pointsArr) => {
-    if (!pointsArr || pointsArr.length === 0) return
+    if (!pointsArr || pointsArr.length === 0) return {min: [0, 0], max: [0, 0]}
 
 
     const result = {min: [1000000, 1000000], max: [0, 0]}

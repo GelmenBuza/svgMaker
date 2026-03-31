@@ -173,12 +173,12 @@ const changeType = (id, index, dotsArr, e, setType, update) => {
 }
 
 export default function CustomContextMenu({data}) {
-    const {elements, customizableElementId, updateElements} = elementsStore();
-    const currentEl = useMemo(() =>
-            elements.find(elem => elem.id === customizableElementId),
-        [elements, customizableElementId]
-    )
+    const {elements, updateElements} = elementsStore();
     const {menuRef, menu} = data
+    const currentEl = useMemo(() =>
+            elements.find(elem => elem.id === menu.id),
+        [elements, menu]
+    )
     const menuType = menu.id.includes('vertex') ? 'vertex' : 'element'
     if (menuType === 'vertex') {
 
@@ -245,6 +245,6 @@ export default function CustomContextMenu({data}) {
                 </label>
             </div>
         )
-    }
+    } else return null
 
 }

@@ -24,12 +24,8 @@ export default function DraggableSettings({
         [elements, id]
     )
 
-    if (!customEll) return null
-
     const currentPointsArr = useMemo(() => parsePathData(customEll.d), [customEll?.d])
     const {min, max} = useMemo(() => getMinMaxCords(currentPointsArr), [currentPointsArr])
-    const [minX, minY] = min
-    const [maxX, maxY] = max
 
     const originalPointsRef = useRef(null)
     const originalCenterRef = useRef(null)
@@ -45,6 +41,11 @@ export default function DraggableSettings({
     const isDraggingRef = useRef(false)  // используется для pointer capture
     const rotationStartRef = useRef({startAngle: 0, initialRotate: 0})
     const svgRef = useRef(null)
+
+    if (!customEll) return null
+    if (!currentPointsArr.length) return null
+    const [minX, minY] = min
+    const [maxX, maxY] = max
 
     if (prevIdRef.current !== id) {
         setDragAngle(null);

@@ -79,7 +79,7 @@ function App() {
 
     const handleContextMenu = (e) => {
         e.preventDefault()
-        setMenu({x: e.clientX, y: e.clientY, id: e.currentTarget.id, svg: e.currentTarget.ownerSVGElement})
+        setMenu({x: e.clientX, y: e.clientY, id: e.currentTarget.id || customizableElementId, svg: e.currentTarget.ownerSVGElement})
     }
 
     useEffect(() => {
