@@ -7,7 +7,6 @@ export default function DraggableDots({
                                           id,
 
                                           onDrag,
-                                          onDragEnd,
                                           handleContextMenu
                                       }) {
     const {elements} = elementsStore()
@@ -257,7 +256,7 @@ export default function DraggableDots({
     const handlePointerUp = (e) => {
         if (isDragging) {
             setIsDragging(false)
-            onDragEnd?.(id)
+
             e.currentTarget.releasePointerCapture?.(e.pointerId)
         }
     }

@@ -16,7 +16,6 @@ export default function DraggablePath({
                                       }) {
     const [isDragging, setDragging] = useState(false)
     const currentPointsArr = useMemo(() => parsePathData(d), [d])
-    const [cx, cy] = useMemo(() => getCenterPath(currentPointsArr), [currentPointsArr])
 
     const [startPos, setStartPos] = useState({x: 0, y: 0})
     const initialPosRef = useRef(currentPointsArr)
@@ -95,11 +94,9 @@ export default function DraggablePath({
         }
     }
 
-    const displayD = useMemo(() => d, [d])
-
     return (
         <path
-            d={displayD}
+            d={d}
             fill={fill}
             stroke={stroke}
             strokeWidth={strokeWidth}

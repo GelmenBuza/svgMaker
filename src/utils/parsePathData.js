@@ -234,23 +234,23 @@ const parsePathData = (d) => {
                 break
             }
 
-            case 'A': {
-                while (i + 6 < tokens.length && typeof tokens[i + 1] === 'number') {
-                    const rx = tokens[++i], ry = tokens[++i]
-                    const xAxisRotation = tokens[++i]
-                    const largeArcFlag = tokens[++i]
-                    const sweepFlag = tokens[++i]
-                    let nx = tokens[++i], ny = tokens[++i]
-                    if (isRelative) { nx += x; ny += y }
-
-                    setPrevOutHandle(x, y)
-                    result.push(createNode('A', nx, ny, { x: nx, y: ny }, { x: nx, y: ny }))
-
-                    x = nx; y = ny
-                    lastControlX = x; lastControlY = y
-                }
-                break
-            }
+            // case 'A': {
+            //     while (i + 6 < tokens.length && typeof tokens[i + 1] === 'number') {
+            //         const rx = tokens[++i], ry = tokens[++i]
+            //         const xAxisRotation = tokens[++i]
+            //         const largeArcFlag = tokens[++i]
+            //         const sweepFlag = tokens[++i]
+            //         let nx = tokens[++i], ny = tokens[++i]
+            //         if (isRelative) { nx += x; ny += y }
+            //
+            //         setPrevOutHandle(x, y)
+            //         result.push(createNode('A', nx, ny, { x: nx, y: ny }, { x: nx, y: ny }))
+            //
+            //         x = nx; y = ny
+            //         lastControlX = x; lastControlY = y
+            //     }
+            //     break
+            // }
 
             case 'Z': {
                 setPrevOutHandle(x, y)

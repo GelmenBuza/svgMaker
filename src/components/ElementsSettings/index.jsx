@@ -6,15 +6,13 @@ import rotatePoints from "../../utils/rotatePoints.js";
 import pointsArrToString from "../../utils/pointsArrToString.js";
 
 export default function ElementSettings() {
-    const {customizableElementId, elements, updateElements, setCustomizableElement} = elementsStore()
+    const {customizableElementId, elements, updateElements} = elementsStore()
 
     const element = elements.find(el => el?.id === customizableElementId);
 
     if (!element) return null;
 
     const rotation = element?.rotate ?? 0;
-
-    const element_type = element.id.split("_")[0]
 
     const handleChange = (field, value) => {
         if (!element) return;
