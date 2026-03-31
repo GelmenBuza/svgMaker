@@ -1,71 +1,136 @@
-import express, { Request, Response, NextFunction } from 'express';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
-import cookieParser from 'cookie-parser';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
+import bcrypt from "bcrypt";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import express, { type Request, type Response, type NextFunction } from "express";
+import jwt, { type JwtPayload } from "jsonwebtoken";
 
-dotenv.config();
+type User = {
+  id: number;
+  email: string;
+  passwordHash: string;
+};
+
+type AuthenticatedRequest = Request & {
+  user?: {
+    userId: number;
+    email: string;
+  };
+};
 
 const app = express();
-const httpServer = createServer(app);
-const PORT = process.env.PORT || 3000;
+const port = Number(process.env.PORT) || 4000;
+const jwtSecret = process.env.JWT_SECRET || "dev_secret_change_me";
+const clientOrigin = process.env.CLIENT_ORIGIN || "http://localhost:5173";
 
-// 🔐 Socket.IO с CORS
-const io = new Server(httpServer, {
-    cors: {
-        origin: process.env.CLIENT_URL || "http://localhost:5173",
-        credentials: true
-    }
-});
+const users: User[] = [];
+let nextUserId = 1;
 
-// 🛡️ Middleware
-app.use(helmet()); // Защита заголовков
-app.use(cors({
-    origin: process.env.CLIENT_URL,
+app.use(
+  cors({
+    origin: clientOrigin,
     credentials: true
-}));
+  })
+);
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// 🚦 Rate limiting
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 минут
-    max: 100, // лимит запросов с одного IP
-    message: 'Too many requests, please try again later'
-});
-app.use('/api/', limiter);
+const createToken = (payload: { userId: number; email: string }): string => {
+  return jwt.sign(payload, jwtSecret, { expiresIn: "7d" });
+};
 
-// 📡 WebSocket события
-io.on('connection', (socket) => {
-    console.log(`🔗 Client connected: ${socket.id}`);
+const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+  const token = req.cookies?.token;
 
-    socket.on('message', (data) => {
-        // Обработка сообщения
-        io.emit('message', data); // Рассылка всем
-    });
+  if (!token) {
+    res.status(401).json({ message: "Не авторизован" });
+    return;
+  }
 
-    socket.on('disconnect', () => {
-        console.log(`❌ Client disconnected: ${socket.id}`);
-    });
-});
+  try {
+    const decoded = jwt.verify(token, jwtSecret) as JwtPayload & {
+      userId: number;
+      email: string;
+    };
+    req.user = { userId: decoded.userId, email: decoded.email };
+    next();
+  } catch {
+    res.status(401).json({ message: "Невалидный токен" });
+  }
+};
 
-// 🎯 Пример API маршрута
-app.get('/api/health', (req: Request, res: Response) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// 🔄 Глобальная обработка ошибок
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    console.error('Error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+app.get("/health", (_req: Request, res: Response) => {
+  res.json({ ok: true, service: "backend", timestamp: new Date().toISOString() });
 });
 
-// 🚀 Запуск сервера
-httpServer.listen(PORT, () => {
-    console.log(`✅ Server running at http://localhost:${PORT}`);
-    console.log(`🔌 Socket.IO ready`);
+app.post("/auth/register", async (req: Request, res: Response) => {
+  const { email, password } = req.body as { email?: string; password?: string };
+
+  if (!email || !password) {
+    res.status(400).json({ message: "email и password обязательны" });
+    return;
+  }
+
+  const existingUser = users.find((user) => user.email.toLowerCase() === email.toLowerCase());
+  if (existingUser) {
+    res.status(409).json({ message: "Пользователь уже существует" });
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  const createdUser: User = { id: nextUserId++, email, passwordHash };
+  users.push(createdUser);
+
+  const token = createToken({ userId: createdUser.id, email: createdUser.email });
+  res.cookie("token", token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: false,
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  });
+
+  res.status(201).json({ id: createdUser.id, email: createdUser.email });
+});
+
+app.post("/auth/login", async (req: Request, res: Response) => {
+  const { email, password } = req.body as { email?: string; password?: string };
+
+  if (!email || !password) {
+    res.status(400).json({ message: "email и password обязательны" });
+    return;
+  }
+
+  const user = users.find((item) => item.email.toLowerCase() === email.toLowerCase());
+  if (!user) {
+    res.status(401).json({ message: "Неверные email или password" });
+    return;
+  }
+
+  const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+  if (!isValidPassword) {
+    res.status(401).json({ message: "Неверные email или password" });
+    return;
+  }
+
+  const token = createToken({ userId: user.id, email: user.email });
+  res.cookie("token", token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: false,
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  });
+
+  res.json({ id: user.id, email: user.email });
+});
+
+app.get("/auth/me", authMiddleware, (req: AuthenticatedRequest, res: Response) => {
+  res.json({ user: req.user });
+});
+
+app.post("/auth/logout", (_req: Request, res: Response) => {
+  res.clearCookie("token");
+  res.status(204).send();
+});
+
+app.listen(port, () => {
+  console.log(`Backend is running on http://localhost:${port}`);
 });
