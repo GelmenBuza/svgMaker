@@ -16,13 +16,14 @@ export default function DraggableDots({
             elements.find(elem => elem.id === id),
         [elements, id]
     )
-    if (!customEll) return null;
 
     const [isDragging, setIsDragging] = useState(false)
     const [startPos, setStartPos] = useState({cx: 0, cy: 0})
     const initialPosRef = useRef(null)
     const svgRef = useRef(null)
     const dotsArr = useMemo(() => parsePathData(customEll.d), [customEll])
+
+    if (!customEll) return null;
 
     const handlePointerDown = (e) => {
         e.preventDefault()

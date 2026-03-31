@@ -180,11 +180,11 @@ export default function CustomContextMenu({data}) {
         [elements, menu]
     )
     const menuType = menu.id.includes('vertex') ? 'vertex' : 'element'
+    const [type, setType] = useState('line')
     if (menuType === 'vertex') {
 
         const vertexIndex = +menu.id.split('-').at(-1)
-
-        const [type, setType] = useState(getCurrentType(vertexIndex, currentEl.points))
+        setType(getCurrentType(vertexIndex, currentEl.points))
 
         return (
             <div
