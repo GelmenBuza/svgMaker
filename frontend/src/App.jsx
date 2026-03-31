@@ -7,6 +7,7 @@ import DraggableSettings from "./components/DraggableSettings.jsx";
 import DraggableDots from "./components/DraggableDots";
 import CustomContextMenu from "./components/CustomContextMenu/index.jsx";
 import parsePathData from "./utils/parsePathData.js";
+import SupportChat from "./components/supportChat";
 
 
 const SVG = ({ell, svgWidth, handleContextMenu, onSvgClick, isTrackingMode}) => {
@@ -292,6 +293,7 @@ function App() {
             </div>
             {menu && (<CustomContextMenu data={{menuRef, menu}}/>)}
             {customizableElementId && <ElementSettings/>}
+            <SupportChat/>
         </>
     )
 }

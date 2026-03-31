@@ -1,0 +1,176 @@
+/* Переменные в стиле Vite Dark Theme */
+:root {
+    --vite-bg: #1a1a1a;
+    --vite-surface: #242424;
+    --vite-surface-hover: #3a3a3a;
+    --vite-primary: #646cff;
+    --vite-text: rgba(255, 255, 255, 0.87);
+    --vite-border: #404040;
+}
+
+.chat-widget-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Кнопка-кружок */
+.chat-toggle-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--vite-primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, background-color 0.2s;
+}
+
+.chat-toggle-btn:hover {
+    transform: scale(1.05);
+    background-color: #747bff;
+}
+
+.chat-toggle-btn.active {
+    background-color: var(--vite-surface);
+    color: var(--vite-text);
+    border: 1px solid var(--vite-border);
+}
+
+/* Окно чата */
+.chat-window {
+    position: absolute;
+    bottom: 80px; /* Отступ от кнопки */
+    right: 0;
+    width: 320px;
+    /* Примерно 1/6 экрана по высоте, но не меньше 300px */
+    height: 20vh;
+    min-height: 300px;
+    max-height: 500px;
+
+    background-color: var(--vite-surface);
+    border: 1px solid var(--vite-border);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    /* Анимация появления */
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Шапка */
+.chat-header {
+    padding: 15px;
+    background-color: var(--vite-surface-hover);
+    border-bottom: 1px solid var(--vite-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--vite-text);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--vite-text);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+/* Тело чата (сообщения) */
+.chat-body {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: var(--vite-bg);
+}
+
+.message {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.message.bot {
+    align-self: flex-start;
+    background-color: var(--vite-surface);
+    color: var(--vite-text);
+    border-bottom-left-radius: 2px;
+}
+
+.message.user {
+    align-self: flex-end;
+    background-color: var(--vite-primary);
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+/* Подвал (инпут) */
+.chat-footer {
+    padding: 10px;
+    background-color: var(--vite-surface);
+    border-top: 1px solid var(--vite-border);
+    display: flex;
+    gap: 8px;
+}
+
+.chat-footer input {
+    flex: 1;
+    background-color: var(--vite-bg);
+    border: 1px solid var(--vite-border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: var(--vite-text);
+    outline: none;
+}
+
+.chat-footer input:focus {
+    border-color: var(--vite-primary);
+}
+
+.chat-footer button {
+    background-color: var(--vite-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    width: 40px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.chat-footer button:hover {
+    background-color: #747bff;
+}
+
+/* Скроллбар */
+.chat-body::-webkit-scrollbar {
+    width: 6px;
+}
+.chat-body::-webkit-scrollbar-thumb {
+    background-color: var(--vite-border);
+    border-radius: 3px;
+}
