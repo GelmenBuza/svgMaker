@@ -173,18 +173,18 @@ const changeType = (id, index, dotsArr, e, setType, update) => {
 }
 
 export default function CustomContextMenu({data}) {
-    const {elements, updateElements} = elementsStore();
+    const {elements, updateElements, customizableElementId} = elementsStore();
     const {menuRef, menu} = data
     const currentEl = useMemo(() =>
-            elements.find(elem => elem.id === menu.id),
-        [elements, menu]
+            elements.find(elem => elem.id === customizableElementId),
+        [elements, customizableElementId]
     )
     const menuType = menu.id.includes('vertex') ? 'vertex' : 'element'
-    const [type, setType] = useState('line')
     if (menuType === 'vertex') {
 
         const vertexIndex = +menu.id.split('-').at(-1)
-        setType(getCurrentType(vertexIndex, currentEl.points))
+        const [type, setType] = useState(getCurrentType(vertexIndex, currentEl.points))
+
 
         return (
             <div
