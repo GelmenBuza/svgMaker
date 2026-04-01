@@ -1,7 +1,6 @@
 import {Request, Response} from "express";
 import bcrypt from "bcrypt";
 import {prisma} from "../prismaClient";
-import jwt from "jsonwebtoken";
 import {createToken} from "../utils/jwt.utils";
 
 const jwtSecret = process.env.JWT_SECRET as string;
@@ -90,7 +89,7 @@ const login = async (req: Request, res: Response) => {
     }
 }
 
-const logout = async (_req: Request, res: Response) => {
+const logout = async (req: Request, res: Response) => {
     try {
         res.clearCookie("token");
         res.status(204).send();
