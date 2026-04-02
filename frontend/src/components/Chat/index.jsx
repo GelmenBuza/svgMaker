@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import style from './style.module.css';
 
-export default function SupportChat() {
+export default function Chat() {
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState('');
 

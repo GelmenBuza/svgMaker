@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react';
 import styles from './style.module.css';
 import ElementSettings from "../../components/ElementsSettings/index.jsx";
 import {elementsStore} from "../../stores/elementsStore.jsx";
@@ -7,7 +7,7 @@ import DraggableSettings from "../../components/DraggableSettings.jsx";
 import DraggableDots from "../../components/DraggableDots";
 import CustomContextMenu from "../../components/CustomContextMenu/index.jsx";
 import parsePathData from "../../utils/parsePathData.js";
-import SupportChat from "../../components/supportChat";
+import Chat from "../../components/Chat";
 
 
 const SVG = ({ell, svgWidth, handleContextMenu, onSvgClick, isTrackingMode}) => {
@@ -293,7 +293,7 @@ function DrawPage() {
             </div>
             {menu && (<CustomContextMenu data={{menuRef, menu}}/>)}
             {customizableElementId && <ElementSettings/>}
-            <SupportChat/>
+            <Chat/>
         </>
     )
 }
