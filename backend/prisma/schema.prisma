@@ -9,8 +9,9 @@ datasource db {
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
-  username  String
+  username  String?
   role      String
   password  String
+  refresh_token String?
   createdAt DateTime @default(now())
 }

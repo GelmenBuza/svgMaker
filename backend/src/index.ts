@@ -1,6 +1,9 @@
+import "dotenv/config";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, {type Request, type Response} from "express";
+import authRoutes from "./routes/authRoutes";
+import userRoutes from "./routes/userRoutes";
 
 
 const app = express();
@@ -19,6 +22,9 @@ app.use(cookieParser());
 app.get("/health", (_req: Request, res: Response) => {
     res.json({ok: true, service: "backend", timestamp: new Date().toISOString()});
 });
+
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
 
 app.listen(port, () => {
     console.log(`Backend is running on http://localhost:${port}`);

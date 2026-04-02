@@ -1,0 +1,20 @@
+.main-container {
+    width: 100vw;
+    height: 100vh;
+    box-sizing: border-box;
+
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.svg-container {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.svg-area {
+    box-shadow: #1a1a1a 0 0  15px 10px;
+    display: flex;
+}
