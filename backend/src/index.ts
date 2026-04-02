@@ -4,6 +4,7 @@ import cors from "cors";
 import express, {type Request, type Response} from "express";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
+import { prisma } from "./prismaClient";
 
 
 const app = express();
@@ -28,4 +29,11 @@ app.use("/api/user", userRoutes);
 
 app.listen(port, () => {
     console.log(`Backend is running on http://localhost:${port}`);
+});
+
+
+process.on("SIGINT", async () => {
+	await prisma.$disconnect();
+	console.log("Server shutdown");
+	process.exit(0);
 });
