@@ -8,6 +8,7 @@ import DraggableDots from "../../components/DraggableDots";
 import CustomContextMenu from "../../components/CustomContextMenu/index.jsx";
 import parsePathData from "../../utils/parsePathData.js";
 import Chat from "../../components/Chat";
+import NavMenu from '../../components/NavMenu';
 
 
 const SVG = ({ell, svgWidth, handleContextMenu, onSvgClick, isTrackingMode}) => {
@@ -245,6 +246,7 @@ function DrawPage() {
 
     return (
         <>
+            <NavMenu/>
             <div className={styles.mainContainer}>
                 <div className={styles.svgContainer}>
                     <div className={styles.createBtn}>

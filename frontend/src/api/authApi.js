@@ -38,10 +38,11 @@ const authApi = {
             method: 'POST',
             credentials: 'include',
         });
+        
         if (!response.ok) {
-            throw new Error('Failed to logout');
+            return {error: (await response.json()).message};
         }
-        return response.data;
+        return {message: "User successfully logged out", error: null};
     },
     
     refreshToken: async () => {
@@ -53,9 +54,9 @@ const authApi = {
             },
         });
         if (!response.ok) {
-            throw new Error('Failed to refresh token');
+            return {error: (await response.json()).message};
         }
-        return response.data;
+        return await response.json();
     },
 }
 

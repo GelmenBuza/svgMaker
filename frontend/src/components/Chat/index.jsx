@@ -1,55 +1,86 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import style from './style.module.css';
+import { userStore } from '../../stores/userStore';
+import { useChatSocket } from '../../api/chatApi';
 
 export default function Chat() {
+    const { user } = userStore();
     const [isOpen, setIsOpen] = useState(false);
-    const [message, setMessage] = useState('');
+    const room = "general";
+    const [text, setText] = useState('');
+    const [uiError, setUiError] = useState(null);
+    
+    const { status, messages, error, disconnect, connect, sendMessage } = useChatSocket();
+    
+    const endRef = useRef(null);
 
-    // Заглушка для отправки сообщения
-    const handleSend = (e) => {
-        e.preventDefault();
-        if (message.trim()) {
-            console.log('Отправлено:', message);
-            setMessage('');
+    useEffect(() => {
+        endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, [messages.length]);
+
+    const handleConnect = () => {
+        console.log("handleConnect");
+        if (!user) setUiError("Для использования чата необходимо авторизоваться");
+        else {
+            console.log("connect");
+            connect({ room, nickname: user.username });
+            setIsOpen(true);
         }
+    }
+    
+    const handleSend = () => {
+        const payload = text.trim();
+        if (!payload || status !== "connected") return;
+        setUiError(null);
+        sendMessage(payload);
+        setText('');
     };
+
+    const handleDisconnect = () => {
+        disconnect();
+        setIsOpen(false);
+    };
+
 
     return (
         <div className={style["chat-widget-container"]}>
-            {isOpen && (
+            {isOpen && user && (
                 <div className={style["chat-window"]}>
                     <div className={style["chat-header"]}>
-                        <h3>Поддержка</h3>
-                        <button onClick={() => setIsOpen(false)} className={style["close-btn"]}>
+                        <h3>Общий чат</h3>
+                        <button onClick={() => handleDisconnect()} className={style["close-btn"]}>
                             &times;
                         </button>
                     </div>
 
                     <div className={style["chat-body"]}>
-                        <div className={style["message bot"]}>
-                            Привет! Чем я могу помочь вам сегодня?
-                        </div>
-                        <div className={style["message user"]}>
-                            У меня вопрос по тарифам.
-                        </div>
+                        {messages.map((message, index) => (
+                            <div key={index} className={style["chat-message"]}>
+                                <span className={style["message-nickname"]}>{message.nickname}:</span>
+                                <span className={style["message-text"]}>{message.text}</span>
+                            </div>
+                        ))}
+
+                        <div ref={endRef}/>
                     </div>
 
-                    <form className={style["chat-footer"]} onSubmit={handleSend}>
+
+                    <form className={style["chat-footer"]} onSubmit={() => handleSend()}>
                         <input
                             type="text"
                             placeholder="Введите сообщение..."
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
+                            value={text}
+                            onChange={(e) => setText(e.target.value)}
                         />
                         <button type="submit">➤</button>
                     </form>
                 </div>
             )}
 
-            {/* Плавающая кнопка (триггер) */}
+
             <button
                 className={`chat-toggle-btn ${isOpen ? 'active' : ''}`}
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => handleConnect()}
             >
                 <svg
                     viewBox="0 0 24 24"
