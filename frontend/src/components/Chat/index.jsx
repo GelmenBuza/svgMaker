@@ -28,7 +28,8 @@ export default function Chat() {
         }
     }
     
-    const handleSend = () => {
+    const handleSend = (e) => {
+        e.preventDefault();
         const payload = text.trim();
         if (!payload || status !== "connected") return;
         setUiError(null);
@@ -54,18 +55,26 @@ export default function Chat() {
                     </div>
 
                     <div className={style["chat-body"]}>
-                        {messages.map((message, index) => (
-                            <div key={index} className={style["chat-message"]}>
-                                <span className={style["message-nickname"]}>{message.nickname}:</span>
-                                <span className={style["message-text"]}>{message.text}</span>
-                            </div>
-                        ))}
+                        {messages.map((message, index) => {
+                            const isSystem = message.kind === "system";
+                            return (
+                                <div
+                                    key={index}
+                                    className={`${style["chat-message"]} ${isSystem ? style["system-message"] : ""}`}
+                                >
+                                    {!isSystem && (
+                                        <span className={style["message-nickname"]}>{message.nickname}:</span>
+                                    )}
+                                    <span className={style["message-text"]}>{message.content}</span>
+                                </div>
+                            );
+                        })}
 
                         <div ref={endRef}/>
                     </div>
 
 
-                    <form className={style["chat-footer"]} onSubmit={() => handleSend()}>
+                    <form className={style["chat-footer"]} onSubmit={(e) => handleSend(e)}>
                         <input
                             type="text"
                             placeholder="Введите сообщение..."

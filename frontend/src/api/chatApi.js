@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useState, useRef } from "react";
 import { io } from "socket.io-client";
-import { userStore } from '../stores/userStore';
 
 function isSystemMessage(message) {
     return message.kind === "system";
@@ -76,7 +75,7 @@ export function useChatSocket() {
         const room = activeRoomRef.current;
         if (!socket || !room) return;
 
-        socket.emit("chat:message", { room, message }, (ack) => {
+        socket.emit("chat:message", { room, content: message }, (ack) => {
             if (!ack.ok) {
                 setStatus("error");
                 setError(ack.error);
