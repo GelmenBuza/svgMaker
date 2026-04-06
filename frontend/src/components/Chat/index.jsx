@@ -19,7 +19,7 @@ export default function Chat() {
     }, [messages.length]);
 
     const handleConnect = () => {
-        console.log("handleConnect");
+        if (isOpen) return;
         if (!user) setUiError("Для использования чата необходимо авторизоваться");
         else {
             console.log("connect");
@@ -60,10 +60,10 @@ export default function Chat() {
                             return (
                                 <div
                                     key={index}
-                                    className={`${style["chat-message"]} ${isSystem ? style["system-message"] : ""}`}
+                                    className={`${message.nickname === user.username ? style["chat-message-user"] : style["chat-message"]} ${isSystem ? style["chat-message-system"] : ""}`}
                                 >
-                                    {!isSystem && (
-                                        <span className={style["message-nickname"]}>{message.nickname}:</span>
+                                    {!isSystem && message.nickname !== user.username && (
+                                        <span className={style["message-nickname"]}>{message.nickname}</span>
                                     )}
                                     <span className={style["message-text"]}>{message.content}</span>
                                 </div>

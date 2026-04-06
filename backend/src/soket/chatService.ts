@@ -1,23 +1,33 @@
+import { prisma } from "../prismaClient";
 import type { ChatMessage, ChatRoomName, ChatNickname } from "../types/chat.types";
-import {v4 as uuidv4} from "uuid";
 
-type MessageByRoom = Map<ChatRoomName, ChatMessage[]>;
-
-// Тут позже будет БД
-const messagesByRoom: MessageByRoom = new Map();
-
-const MAX_MESSAGES_PER_ROOM = 100;
 const MAX_TEXT_LENGTH = 1000;
+const SYSTEM_SENDER_ID = -1;
 
-export function getRoomHistory(room: ChatRoomName): ChatMessage[] {
-    return messagesByRoom.get(room) || [];
+function mapRowToChatMessage(row: Messages): ChatMessage {
+    return {
+        kind: row.sender_id === SYSTEM_SENDER_ID ? "system" : "user",
+        id: row.id,
+        sender_id: row.sender_id,
+        ...(row.nickname != null && row.nickname !== "" ? { nickname: row.nickname } : {}),
+        content: row.content,
+        createdAt: row.createdAt,
+    };
 }
 
-export function addMessage(params: {
+export async function getRoomHistory(room: ChatRoomName): Promise<ChatMessage[]> {
+    const messages = await prisma.messages.findMany({
+        where: { room },
+        orderBy: { createdAt: "asc" },
+    });
+    return messages.map(mapRowToChatMessage);
+}
+
+export async function addMessage(params: {
     room: ChatRoomName;
     nickname: ChatNickname;
     content: string;
-}): ChatMessage {
+}): Promise<ChatMessage> {
     const text = normalizeText(params.content);
     if (!text) {
         throw new Error("Text cannot be empty");
@@ -26,46 +36,40 @@ export function addMessage(params: {
         throw new Error(`Text cannot be longer than ${MAX_TEXT_LENGTH} characters`);
     }
 
-    const message: ChatMessage = {
-        kind: "user",
-        id: uuidv4(),
-        room: params.room,
-        nickname: params.nickname,
-        content: text,
-        createdAt: new Date(),
-    }
-    
-    storeMessage(message);
-    return message;
+    const user = await prisma.user.findFirst({
+        where: { username: params.nickname },
+    });
+    const sender_id = user?.id ?? 0;
+
+    const message = await prisma.messages.create({
+        data: {
+            room: params.room,
+            sender_id,
+            nickname: params.nickname,
+            content: text,
+        },
+    });
+
+    return mapRowToChatMessage(message);
 }
 
-export function addSystemMessage(params: {
+export async function addSystemMessage(params: {
     room: ChatRoomName;
     content: string;
-}): ChatMessage {
+}): Promise<ChatMessage> {
     const text = normalizeText(params.content);
-    const message: ChatMessage = {
-        kind: "system",
-        id: uuidv4(),
-        room: params.room,
-        nickname: "System",
-        content: text,
-        createdAt: new Date(),
-    }
+    const message = await prisma.messages.create({
+        data: {
+            room: params.room,
+            sender_id: SYSTEM_SENDER_ID,
+            nickname: null,
+            content: text,
+        },
+    });
 
-    storeMessage(message);
-    return message;
+    return mapRowToChatMessage(message);
 }
 
 function normalizeText(text: string): string {
     return text.trim().replace(/\s+/g, " ");
-}
-
-function storeMessage(message: ChatMessage) {
-    const current = messagesByRoom.get(message.room) || [];
-    current.push(message);
-    if (current.length > MAX_MESSAGES_PER_ROOM) {
-        current.splice(0, current.length - MAX_MESSAGES_PER_ROOM);
-    }
-    messagesByRoom.set(message.room, current);
 }

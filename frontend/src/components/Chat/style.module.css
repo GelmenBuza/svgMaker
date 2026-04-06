@@ -46,13 +46,13 @@
 /* Окно чата */
 .chat-window {
     position: absolute;
-    bottom: 80px; /* Отступ от кнопки */
+    bottom: 70px; /* Отступ от кнопки */
     right: 0;
     width: 320px;
     /* Примерно 1/6 экрана по высоте, но не меньше 300px */
     height: 20vh;
-    min-height: 300px;
-    max-height: 500px;
+    min-height: 500px;
+    max-height: 700px;
 
     background-color: var(--vite-surface);
     border: 1px solid var(--vite-border);
@@ -73,7 +73,7 @@
 
 /* Шапка */
 .chat-header {
-    padding: 15px;
+    padding: 10px 15px;
     background-color: var(--vite-surface-hover);
     border-bottom: 1px solid var(--vite-border);
     display: flex;
@@ -94,6 +94,7 @@
     font-size: 24px;
     cursor: pointer;
     line-height: 1;
+    padding: 0;
 }
 
 /* Тело чата (сообщения) */
@@ -103,7 +104,7 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 5px;
     background-color: var(--vite-bg);
 }
 
@@ -173,4 +174,45 @@
 .chat-body::-webkit-scrollbar-thumb {
     background-color: var(--vite-border);
     border-radius: 3px;
+}
+.chat-message-system {
+    background-color: #00000065 !important;
+    align-self: center !important;
+    padding: 10px 14px !important;
+    
+}
+
+.message-nickname {
+    position: absolute;
+    top: 0;
+    right: 5px;
+}
+
+.chat-message {
+    position: relative;
+    background-color: #2833ff65;
+    color: white;
+    align-self: flex-start;
+    min-width: 100px;
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.4;
+    padding-top: 20px;
+}
+
+.chat-message-user {
+    background-color: #2833ff65;
+    color: white;
+    align-self: flex-end;
+    min-width: fit-content;
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+    text-align: right;
+    margin-left: auto;
 }

@@ -5,12 +5,12 @@ export type ChatNickname = string;
 
 export type ChatMessage = {
     kind: ChatMessageKind;
-    id: string;
-    room: ChatRoomName;
-    nickname: ChatNickname;
+    id: number;
+    sender_id: number;
+    nickname?: string;
     content: string;
     createdAt: Date;
-}
+};
 
 export interface ChatJoinPayload {
     room: ChatRoomName;
