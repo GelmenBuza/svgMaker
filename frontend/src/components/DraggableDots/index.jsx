@@ -186,12 +186,22 @@ export default function DraggableDots({
                                 const lenOpp = Math.sqrt(
                                     Math.pow(initialOpp.x - initialAnchor.cx, 2) + Math.pow(initialOpp.y - initialAnchor.cy, 2)
                                 );
-                                obj[oppositeType].x = anchorX - (dx / distanceActive) * lenOpp;
-                                obj[oppositeType].y = anchorY - (dy / distanceActive) * lenOpp;
+                                if (oppositeType === 'in') {
+                                    sharedInNode[oppositeType].x = anchorX - (dx / distanceActive) * lenOpp;
+                                    sharedInNode[oppositeType].y = anchorY - (dy / distanceActive) * lenOpp;
+                                } else {
+                                    sharedOutNode[oppositeType].x = anchorX - (dx / distanceActive) * lenOpp;
+                                    sharedOutNode[oppositeType].y = anchorY - (dy / distanceActive) * lenOpp;
+                                }
                             } else {
                                 const oppositeType = isDraggingIn ? 'out' : 'in';
-                                obj[oppositeType].x = anchorX;
-                                obj[oppositeType].y = anchorY;
+                                if (oppositeType === 'in') {
+                                    sharedInNode[oppositeType].x = anchorX;
+                                    sharedInNode[oppositeType].y = anchorY;
+                                } else {
+                                    sharedOutNode[oppositeType].x = anchorX;
+                                    sharedOutNode[oppositeType].y = anchorY;
+                                }
                             }
                         } else {
                             if (type === 'in' && obj.in) {
@@ -221,7 +231,6 @@ export default function DraggableDots({
                             const anchorX = obj.x;
                             const anchorY = obj.y;
                             const isDraggingIn = e.target.id.split('-').at(-2) === 'in';
-                            // ТУТ ИСПРАВЛЯЙ
                             if (isDraggingIn) {
                                 obj.in.x = initialPosRef.current.in.x + deltaX;
                                 obj.in.y = initialPosRef.current.in.y + deltaY;
@@ -245,11 +254,9 @@ export default function DraggableDots({
                                     Math.pow(initialOpp.x - initialAnchor.cx, 2) + Math.pow(initialOpp.y - initialAnchor.cy, 2)
                                 );
 
-                                // ТУТ ИСПРАВЛЯЙ
                                 obj[oppositeType].x = anchorX - (dx / distanceActive) * lenOpp;
                                 obj[oppositeType].y = anchorY - (dy / distanceActive) * lenOpp;
                             } else {
-                                // ТУТ ИСПРАВЛЯЙ
                                 const oppositeType = isDraggingIn ? 'out' : 'in';
                                 obj[oppositeType].x = anchorX;
                                 obj[oppositeType].y = anchorY;
