@@ -1,27 +1,29 @@
-import {useMemo, useRef, useState} from "react";
-import {elementsStore} from "../../stores/elementsStore.jsx";
+import { useMemo, useRef, useState } from "react";
+import { elementsStore } from "../../stores/elementsStore.jsx";
 import parsePathData from "../../utils/parsePathData.js";
 import style from './style.module.css'
 
 export default function DraggableDots({
-                                          id,
-
-                                          onDrag,
-                                          handleContextMenu
-                                      }) {
-    const {elements} = elementsStore()
+    id,
+    onDrag,
+    handleContextMenu
+}) {
+    const { elements } = elementsStore()
 
     const customEll = useMemo(() =>
-            elements.find(elem => elem.id === id),
+        elements.find(elem => elem.id === id),
         [elements, id]
     )
     if (!customEll) return null;
 
     const [isDragging, setIsDragging] = useState(false)
-    const [startPos, setStartPos] = useState({cx: 0, cy: 0})
+    const [startPos, setStartPos] = useState({ cx: 0, cy: 0 })
     const initialPosRef = useRef(null)
     const svgRef = useRef(null)
-    const dotsArr = useMemo(() => parsePathData(customEll.d), [customEll])
+    const dotsArr = useMemo(
+        () => (customEll.points?.length ? customEll.points : parsePathData(customEll.d)),
+        [customEll]
+    )
 
 
     const handlePointerDown = (e) => {
@@ -33,15 +35,27 @@ export default function DraggableDots({
         } else {
             objIndex = +e.target.id.split('-')[1].split('=')[1]
         }
-        initialPosRef.current = {
-            cx: dotsArr[objIndex].x,
-            cy: dotsArr[objIndex].y,
-            in: {...dotsArr[objIndex].in},
-            out: {...dotsArr[objIndex].out},
-            type: dotsArr[objIndex].type
+        const isClosedShape = dotsArr[0].x === dotsArr.at(-1).x && dotsArr[0].y === dotsArr.at(-1).y
+        const lastSharedIndex = dotsArr.length - 2
+        if (isClosedShape && (objIndex === lastSharedIndex || objIndex === 0)) {
+            initialPosRef.current = {
+                cx: dotsArr[lastSharedIndex].x,
+                cy: dotsArr[lastSharedIndex].y,
+                in: { ...dotsArr[lastSharedIndex].in },
+                out: { ...dotsArr[0].out },
+                type: dotsArr[lastSharedIndex].type
+            }
+        } else {
+            initialPosRef.current = {
+                cx: dotsArr[objIndex].x,
+                cy: dotsArr[objIndex].y,
+                in: { ...dotsArr[objIndex].in },
+                out: { ...dotsArr[objIndex].out },
+                type: dotsArr[objIndex].type
+            }
         }
         setIsDragging(true)
-        setStartPos({cx: e.clientX, cy: e.clientY})
+        setStartPos({ cx: e.clientX, cy: e.clientY })
         svgRef.current = e.currentTarget.ownerSVGElement
 
         e.currentTarget.setPointerCapture?.(e.pointerId)
@@ -59,13 +73,13 @@ export default function DraggableDots({
                 const movedVertex = +e.target.id.split('-').at(-1)
                 let counter = 0;
 
-
                 for (const obj of dotsArr) {
                     if (obj.command.toUpperCase() === 'Z') {
                         counter++;
                         continue;
                     }
                     if (movedVertex === dotsArr.length - 2 && (dotsArr[0].x === dotsArr.at(-1).x && dotsArr[0].y === dotsArr.at(-1).y)) {
+
                         dotsArr[0].x = initialPosRef.current.cx + deltaX
                         dotsArr[0].y = initialPosRef.current.cy + deltaY
                         if (dotsArr[0].in) {
@@ -79,6 +93,7 @@ export default function DraggableDots({
 
                         dotsArr[dotsArr.length - 1].x = initialPosRef.current.cx + deltaX
                         dotsArr[dotsArr.length - 1].y = initialPosRef.current.cy + deltaY
+
                         if (dotsArr[dotsArr.length - 1].in) {
                             dotsArr[dotsArr.length - 1].in.x = initialPosRef.current.in.x + deltaX
                             dotsArr[dotsArr.length - 1].in.y = initialPosRef.current.in.y + deltaY
@@ -87,6 +102,7 @@ export default function DraggableDots({
                             dotsArr[dotsArr.length - 1].out.x = initialPosRef.current.out.x + deltaX
                             dotsArr[dotsArr.length - 1].out.y = initialPosRef.current.out.y + deltaY
                         }
+
 
                         dotsArr[dotsArr.length - 2].x = initialPosRef.current.cx + deltaX
                         dotsArr[dotsArr.length - 2].y = initialPosRef.current.cy + deltaY
@@ -125,40 +141,38 @@ export default function DraggableDots({
 
                 if (targetDotIndex !== undefined) {
                     const obj = dotsArr[targetDotIndex]
-                    if (dotsArr[0].x === obj.x && dotsArr[0].y === obj.y) {
-
+                    const isClosedShape = dotsArr[0].x === dotsArr.at(-1).x && dotsArr[0].y === dotsArr.at(-1).y
+                    const lastSharedIndex = dotsArr.length - 2
+                    const isSharedClosingNode = isClosedShape && (targetDotIndex === lastSharedIndex || targetDotIndex === 0)
+                    if (isSharedClosingNode) {
+                        const sharedInNode = dotsArr[lastSharedIndex]
+                        const sharedOutNode = dotsArr[0]
                         if (initialPosRef.current.type === 'symmetric') {
                             if (e.target.id.split('-').at(-2) === 'in') {
-                                obj.in.x = initialPosRef.current.in.x + deltaX
-                                obj.in.y = initialPosRef.current.in.y + deltaY
-                                obj.out.x = initialPosRef.current.out.x - deltaX
-                                obj.out.y = initialPosRef.current.out.y - deltaY
-                                dotsArr[0].out.x = initialPosRef.current.out.x - deltaX
-                                dotsArr[0].out.y = initialPosRef.current.out.y - deltaY
+                                sharedInNode.in.x = initialPosRef.current.in.x + deltaX
+                                sharedInNode.in.y = initialPosRef.current.in.y + deltaY
+                                sharedOutNode.out.x = initialPosRef.current.out.x - deltaX
+                                sharedOutNode.out.y = initialPosRef.current.out.y - deltaY
                             } else if (e.target.id.split('-').at(-2) === 'out') {
-                                obj.in.x = initialPosRef.current.in.x - deltaX
-                                obj.in.y = initialPosRef.current.in.y - deltaY
-                                obj.out.x = initialPosRef.current.out.x + deltaX
-                                obj.out.y = initialPosRef.current.out.y + deltaY
-                                dotsArr[0].out.x = initialPosRef.current.out.x + deltaX
-                                dotsArr[0].out.y = initialPosRef.current.out.y + deltaY
-
+                                sharedInNode.in.x = initialPosRef.current.in.x - deltaX
+                                sharedInNode.in.y = initialPosRef.current.in.y - deltaY
+                                sharedOutNode.out.x = initialPosRef.current.out.x + deltaX
+                                sharedOutNode.out.y = initialPosRef.current.out.y + deltaY
                             }
-
                         } else if (initialPosRef.current.type === 'smooth') {
-                            const anchorX = obj.x;
-                            const anchorY = obj.y;
+                            const anchorX = sharedInNode.x;
+                            const anchorY = sharedInNode.y;
                             const isDraggingIn = e.target.id.split('-').at(-2) === 'in';
 
                             if (isDraggingIn) {
-                                obj.in.x = initialPosRef.current.in.x + deltaX;
-                                obj.in.y = initialPosRef.current.in.y + deltaY;
+                                sharedInNode.in.x = initialPosRef.current.in.x + deltaX;
+                                sharedInNode.in.y = initialPosRef.current.in.y + deltaY;
                             } else if (obj.out) {
-                                obj.out.x = initialPosRef.current.out.x + deltaX;
-                                obj.out.y = initialPosRef.current.out.y + deltaY;
+                                sharedOutNode.out.x = initialPosRef.current.out.x + deltaX;
+                                sharedOutNode.out.y = initialPosRef.current.out.y + deltaY;
                             }
 
-                            const activeHandle = isDraggingIn ? obj.in : obj.out;
+                            const activeHandle = isDraggingIn ? sharedInNode.in : sharedOutNode.out;
                             const dx = activeHandle.x - anchorX;
                             const dy = activeHandle.y - anchorY;
 
@@ -189,67 +203,70 @@ export default function DraggableDots({
                                 obj.out.y = initialPosRef.current.out.y + deltaY
                             }
                         }
-                    }
-                    if (initialPosRef.current.type === 'symmetric') {
-                        if (e.target.id.split('-').at(-2) === 'in') {
-                            obj.in.x = initialPosRef.current.in.x + deltaX
-                            obj.in.y = initialPosRef.current.in.y + deltaY
-                            obj.out.x = initialPosRef.current.out.x - deltaX
-                            obj.out.y = initialPosRef.current.out.y - deltaY
-                        } else if (e.target.id.split('-').at(-2) === 'out') {
-                            obj.in.x = initialPosRef.current.in.x - deltaX
-                            obj.in.y = initialPosRef.current.in.y - deltaY
-                            obj.out.x = initialPosRef.current.out.x + deltaX
-                            obj.out.y = initialPosRef.current.out.y + deltaY
-                        }
-
-                    } else if (initialPosRef.current.type === 'smooth') {
-                        const anchorX = obj.x;
-                        const anchorY = obj.y;
-                        const isDraggingIn = e.target.id.split('-').at(-2) === 'in';
-
-                        if (isDraggingIn) {
-                            obj.in.x = initialPosRef.current.in.x + deltaX;
-                            obj.in.y = initialPosRef.current.in.y + deltaY;
-                        } else if (obj.out) {
-                            obj.out.x = initialPosRef.current.out.x + deltaX;
-                            obj.out.y = initialPosRef.current.out.y + deltaY;
-                        }
-
-                        const activeHandle = isDraggingIn ? obj.in : obj.out;
-                        const dx = activeHandle.x - anchorX;
-                        const dy = activeHandle.y - anchorY;
-
-                        const distanceActive = Math.sqrt(dx * dx + dy * dy);
-
-                        if (distanceActive > 0.1) {
-                            const oppositeType = isDraggingIn ? 'out' : 'in';
-                            const initialOpp = initialPosRef.current[oppositeType];
-                            const initialAnchor = initialPosRef.current;
-
-                            const lenOpp = Math.sqrt(
-                                Math.pow(initialOpp.x - initialAnchor.cx, 2) + Math.pow(initialOpp.y - initialAnchor.cy, 2)
-                            );
-                            obj[oppositeType].x = anchorX - (dx / distanceActive) * lenOpp;
-                            obj[oppositeType].y = anchorY - (dy / distanceActive) * lenOpp;
-                        } else {
-                            const oppositeType = isDraggingIn ? 'out' : 'in';
-                            obj[oppositeType].x = anchorX;
-                            obj[oppositeType].y = anchorY;
-                        }
                     } else {
-                        if (type === 'in' && obj.in) {
-                            obj.in.x = initialPosRef.current.in.x + deltaX
-                            obj.in.y = initialPosRef.current.in.y + deltaY
-                        }
-                        if (type === 'out' && obj.out) {
-                            obj.out.x = initialPosRef.current.out.x + deltaX
-                            obj.out.y = initialPosRef.current.out.y + deltaY
+                        if (initialPosRef.current.type === 'symmetric') {
+                            if (e.target.id.split('-').at(-2) === 'in') {
+                                obj.in.x = initialPosRef.current.in.x + deltaX
+                                obj.in.y = initialPosRef.current.in.y + deltaY
+                                obj.out.x = initialPosRef.current.out.x - deltaX
+                                obj.out.y = initialPosRef.current.out.y - deltaY
+                            } else if (e.target.id.split('-').at(-2) === 'out') {
+                                obj.in.x = initialPosRef.current.in.x - deltaX
+                                obj.in.y = initialPosRef.current.in.y - deltaY
+                                obj.out.x = initialPosRef.current.out.x + deltaX
+                                obj.out.y = initialPosRef.current.out.y + deltaY
+                            }
+
+                        } else if (initialPosRef.current.type === 'smooth') {
+                            const anchorX = obj.x;
+                            const anchorY = obj.y;
+                            const isDraggingIn = e.target.id.split('-').at(-2) === 'in';
+                            // ТУТ ИСПРАВЛЯЙ
+                            if (isDraggingIn) {
+                                obj.in.x = initialPosRef.current.in.x + deltaX;
+                                obj.in.y = initialPosRef.current.in.y + deltaY;
+                            } else if (obj.out) {
+                                obj.out.x = initialPosRef.current.out.x + deltaX;
+                                obj.out.y = initialPosRef.current.out.y + deltaY;
+                            }
+
+                            const activeHandle = isDraggingIn ? obj.in : obj.out;
+                            const dx = activeHandle.x - anchorX;
+                            const dy = activeHandle.y - anchorY;
+
+                            const distanceActive = Math.sqrt(dx * dx + dy * dy);
+
+                            if (distanceActive > 0.1) {
+                                const oppositeType = isDraggingIn ? 'out' : 'in';
+                                const initialOpp = initialPosRef.current[oppositeType];
+                                const initialAnchor = initialPosRef.current;
+
+                                const lenOpp = Math.sqrt(
+                                    Math.pow(initialOpp.x - initialAnchor.cx, 2) + Math.pow(initialOpp.y - initialAnchor.cy, 2)
+                                );
+
+                                // ТУТ ИСПРАВЛЯЙ
+                                obj[oppositeType].x = anchorX - (dx / distanceActive) * lenOpp;
+                                obj[oppositeType].y = anchorY - (dy / distanceActive) * lenOpp;
+                            } else {
+                                const oppositeType = isDraggingIn ? 'out' : 'in';
+                                obj[oppositeType].x = anchorX;
+                                obj[oppositeType].y = anchorY;
+                            }
+                        } else {
+                            if (type === 'in' && obj.in) {
+                                obj.in.x = initialPosRef.current.in.x + deltaX
+                                obj.in.y = initialPosRef.current.in.y + deltaY
+                            }
+                            if (type === 'out' && obj.out) {
+                                obj.out.x = initialPosRef.current.out.x + deltaX
+                                obj.out.y = initialPosRef.current.out.y + deltaY
+                            }
                         }
                     }
                 }
             }
-            onDrag?.(id, {points: dotsArr})
+            onDrag?.(id, { points: dotsArr })
         }
     }
 
@@ -284,28 +301,28 @@ export default function DraggableDots({
     return (
         <>
             {vertexArr.map((vertex, index) => {
-                    return (
-                        <ellipse
-                            key={`${id}-vertex-${index}`}
-                            id={`${id}-vertex-${index}`}
-                            className={style.DraggableDot}
-                            cx={vertex[0]}
-                            cy={vertex[1]}
-                            rx={5}
-                            ry={5}
-                            fill={index === 0 ? 'red' : index === vertexArr.length - 1 ? 'green' : 'currentColor'}
-                            stroke={'transparent'}
-                            strokeWidth={0}
+                return (
+                    <ellipse
+                        key={`${id}-vertex-${index}`}
+                        id={`${id}-vertex-${index}`}
+                        className={style.DraggableDot}
+                        cx={vertex[0]}
+                        cy={vertex[1]}
+                        rx={5}
+                        ry={5}
+                        fill={index === 0 ? 'red' : index === vertexArr.length - 1 ? 'green' : 'currentColor'}
+                        stroke={'transparent'}
+                        strokeWidth={0}
 
 
-                            onPointerDown={handlePointerDown}
-                            onPointerMove={handlePointerMove}
-                            onPointerUp={handlePointerUp}
-                            onPointerLeave={handlePointerUp}
-                            onContextMenu={(e) => handleContextMenu(e)}
-                        />
-                    )
-                }
+                        onPointerDown={handlePointerDown}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={handlePointerUp}
+                        onPointerLeave={handlePointerUp}
+                        onContextMenu={(e) => handleContextMenu(e)}
+                    />
+                )
+            }
             )}
             {guideLinesArr.map((dot, index) => {
                 if (dot.at(-2) !== 'line') {

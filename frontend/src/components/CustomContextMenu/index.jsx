@@ -1,6 +1,6 @@
 import style from './style.module.css'
-import {useMemo, useState} from "react";
-import {elementsStore} from "../../stores/elementsStore.jsx";
+import { useMemo, useState } from "react";
+import { elementsStore } from "../../stores/elementsStore.jsx";
 
 const getCurrentType = (index, dotsArr) => {
     let dotType = null
@@ -77,13 +77,13 @@ const addNewVertex = (e, menu, currentEl, update) => {
         x: pt.x,
         y: pt.y,
         type: 'cusp',
-        in: { x: pt.x , y: pt.y },
+        in: { x: pt.x, y: pt.y },
         out: { x: pt.x, y: pt.y }
     }
 
     points.splice(insertIndex, 0, newPoint)
 
-    update(currentEl.id, {points})
+    update(currentEl.id, { points })
 }
 
 
@@ -94,89 +94,91 @@ const changeType = (id, index, dotsArr, e, setType, update) => {
             case 'line':
                 dotsArr[index] = {
                     ...dotsArr[index],
-                    in: {x: dotsArr[index].x, y: dotsArr[index].y},
-                    out: {x: dotsArr[index].x, y: dotsArr[index].y}
+                    in: { x: dotsArr[index].x, y: dotsArr[index].y },
+                    out: { x: dotsArr[index].x, y: dotsArr[index].y }
                 }
                 dotsArr[0] = {
                     ...dotsArr[0],
-                    out: {x: dotsArr[0].x, y: dotsArr[0].y},
+                    out: { x: dotsArr[0].x, y: dotsArr[0].y },
                 }
                 break
             case 'cusp':
                 dotsArr[index] = {
                     ...dotsArr[index],
-                    in: {x: dotsArr[index].x - 20, y: dotsArr[index].y + 20},
-                    out: {x: dotsArr[index].x + 20, y: dotsArr[index].y - 10}
+                    in: { x: dotsArr[index].x - 20, y: dotsArr[index].y + 20 },
                 }
                 dotsArr[0] = {
                     ...dotsArr[0],
-                    out: {x: dotsArr[0].x + 20, y: dotsArr[0].y - 10},
+                    out: { x: dotsArr[0].x + 20, y: dotsArr[0].y - 10 },
                 }
                 break
             case 'smooth':
                 dotsArr[index] = {
                     ...dotsArr[index],
-                    in: {x: dotsArr[index].x - 15, y: dotsArr[index].y + 15},
-                    out: {x: dotsArr[index].x + 10, y: dotsArr[index].y - 10}
+                    in: { x: dotsArr[index].x - 15, y: dotsArr[index].y + 15 },
                 }
                 dotsArr[0] = {
                     ...dotsArr[0],
-                    out: {x: dotsArr[0].x + 10, y: dotsArr[0].y - 10},
+                    out: { x: dotsArr[0].x + 10, y: dotsArr[0].y - 10 },
                 }
                 break
             case 'symmetric':
                 dotsArr[index] = {
                     ...dotsArr[index],
-                    in: {x: dotsArr[index].x - 10, y: dotsArr[index].y + 10},
-                    out: {x: dotsArr[index].x + 10, y: dotsArr[index].y - 10}
+                    in: { x: dotsArr[index].x - 10, y: dotsArr[index].y + 10 },
                 }
                 dotsArr[0] = {
                     ...dotsArr[0],
-                    out: {x: dotsArr[0].x + 10, y: dotsArr[0].y - 10},
+                    out: { x: dotsArr[0].x + 10, y: dotsArr[0].y - 10 },
                 }
                 break
         }
+        dotsArr[index].type = value
+        update(id, { points: dotsArr })
+        setType(value)
+    } else {
+        switch (value) {
+            case 'line':
+                dotsArr[index] = {
+                    ...dotsArr[index],
+                    in: { x: dotsArr[index].x, y: dotsArr[index].y },
+                    out: { x: dotsArr[index].x, y: dotsArr[index].y }
+                }
+                break
+            case 'cusp':
+                dotsArr[index] = {
+                    ...dotsArr[index],
+                    in: { x: dotsArr[index].x - 20, y: dotsArr[index].y + 20 },
+                    out: { x: dotsArr[index].x + 20, y: dotsArr[index].y - 10 }
+                }
+                break
+            case 'smooth':
+                dotsArr[index] = {
+                    ...dotsArr[index],
+                    in: { x: dotsArr[index].x - 15, y: dotsArr[index].y + 15 },
+                    out: { x: dotsArr[index].x + 10, y: dotsArr[index].y - 10 }
+                }
+                break
+            case 'symmetric':
+                dotsArr[index] = {
+                    ...dotsArr[index],
+                    in: { x: dotsArr[index].x - 10, y: dotsArr[index].y + 10 },
+                    out: { x: dotsArr[index].x + 10, y: dotsArr[index].y - 10 }
+                }
+                break
+        }
+        dotsArr[index].type = value
+        update(id, { points: dotsArr })
+        setType(value)
     }
-    switch (value) {
-        case 'line':
-            dotsArr[index] = {
-                ...dotsArr[index],
-                in: {x: dotsArr[index].x, y: dotsArr[index].y},
-                out: {x: dotsArr[index].x, y: dotsArr[index].y}
-            }
-            break
-        case 'cusp':
-            dotsArr[index] = {
-                ...dotsArr[index],
-                in: {x: dotsArr[index].x - 20, y: dotsArr[index].y + 20},
-                out: {x: dotsArr[index].x + 20, y: dotsArr[index].y - 10}
-            }
-            break
-        case 'smooth':
-            dotsArr[index] = {
-                ...dotsArr[index],
-                in: {x: dotsArr[index].x - 15, y: dotsArr[index].y + 15},
-                out: {x: dotsArr[index].x + 10, y: dotsArr[index].y - 10}
-            }
-            break
-        case 'symmetric':
-            dotsArr[index] = {
-                ...dotsArr[index],
-                in: {x: dotsArr[index].x - 10, y: dotsArr[index].y + 10},
-                out: {x: dotsArr[index].x + 10, y: dotsArr[index].y - 10}
-            }
-            break
-    }
-    dotsArr[index].type = value
-    update(id, {points: dotsArr})
-    setType(value)
+
 }
 
-export default function CustomContextMenu({data}) {
-    const {elements, updateElements, customizableElementId} = elementsStore();
-    const {menuRef, menu} = data
+export default function CustomContextMenu({ data }) {
+    const { elements, updateElements, customizableElementId } = elementsStore();
+    const { menuRef, menu } = data
     const currentEl = useMemo(() =>
-            elements.find(elem => elem.id === customizableElementId),
+        elements.find(elem => elem.id === customizableElementId),
         [elements, customizableElementId]
     )
     const menuType = menu.id.includes('vertex') ? 'vertex' : 'element'
@@ -198,33 +200,33 @@ export default function CustomContextMenu({data}) {
                 <span>Тип точки:{type}</span>
                 <label htmlFor="">
                     {type === 'line' ?
-                        <input type="radio" name='angleType' value={'line'} checked/> :
+                        <input type="radio" name='angleType' value={'line'} checked /> :
                         <input type="radio" name='angleType' value={'line'}
-                               onChange={(e) => changeType(currentEl.id, vertexIndex, currentEl.points, e, setType, updateElements)}/>
+                            onChange={(e) => changeType(currentEl.id, vertexIndex, currentEl.points, e, setType, updateElements)} />
                     }
                     line
                 </label>
                 <label htmlFor="">
                     {type === 'cusp' ?
-                        <input type="radio" name='angleType' value={'cusp'} checked/> :
+                        <input type="radio" name='angleType' value={'cusp'} checked /> :
                         <input type="radio" name='angleType' value={'cusp'}
-                               onChange={(e) => changeType(currentEl.id, vertexIndex, currentEl.points, e, setType, updateElements)}/>
+                            onChange={(e) => changeType(currentEl.id, vertexIndex, currentEl.points, e, setType, updateElements)} />
                     }
                     cusp
                 </label>
                 <label htmlFor="">
                     {type === 'smooth' ?
-                        <input type="radio" name='angleType' value={'smooth'} checked/> :
+                        <input type="radio" name='angleType' value={'smooth'} checked /> :
                         <input type="radio" name='angleType' value={'smooth'}
-                               onChange={(e) => changeType(currentEl.id, vertexIndex, currentEl.points, e, setType, updateElements)}/>
+                            onChange={(e) => changeType(currentEl.id, vertexIndex, currentEl.points, e, setType, updateElements)} />
                     }
                     smooth
                 </label>
                 <label htmlFor="">
                     {type === 'symmetric' ?
-                        <input type="radio" name='angleType' value={'symmetric'} checked/> :
+                        <input type="radio" name='angleType' value={'symmetric'} checked /> :
                         <input type="radio" name='angleType' value={'symmetric'}
-                               onChange={(e) => changeType(currentEl.id, vertexIndex, currentEl.points, e, setType, updateElements)}/>
+                            onChange={(e) => changeType(currentEl.id, vertexIndex, currentEl.points, e, setType, updateElements)} />
                     }
                     symmetric
                 </label>
