@@ -249,6 +249,7 @@ export default function DraggableDots({
                                 obj[oppositeType].x = anchorX - (dx / distanceActive) * lenOpp;
                                 obj[oppositeType].y = anchorY - (dy / distanceActive) * lenOpp;
                             } else {
+                                // ТУТ ИСПРАВЛЯЙ
                                 const oppositeType = isDraggingIn ? 'out' : 'in';
                                 obj[oppositeType].x = anchorX;
                                 obj[oppositeType].y = anchorY;
