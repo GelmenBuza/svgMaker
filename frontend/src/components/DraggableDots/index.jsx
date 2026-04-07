@@ -333,7 +333,7 @@ export default function DraggableDots({
             }
             )}
             {guideLinesArr.map((dot, index) => {
-                if (dot.at(-2) !== 'line') {
+                if (dot.at(-2) !== 'line' && (dotsArr[0].x !== dot[0] || dotsArr[0].y !== dot[1])) {
                     return (
                         <ellipse
                             key={`${id}-vNum=${dot.at(-1)}-guideLine-${dot[2]}-${index}`}
