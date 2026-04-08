@@ -46,10 +46,8 @@ export default function DraggableSettings({
     // Рефы для скейла
     const isScalingRef = useRef(false)
     const scaleStartRef = useRef({
-        startX: 0,
-        startY: 0,
-        baseWidth: 1,
-        baseHeight: 1,
+        startDist: 1,
+        initialScale: 1,
         cx: 0,
         cy: 0,
     })
@@ -174,19 +172,22 @@ export default function DraggableSettings({
         svgRef.current = e.currentTarget.ownerSVGElement;
         isScalingRef.current = true;
 
-        const baseWidth = Math.max(maxX - minX, 1);
-        const baseHeight = Math.max(maxY - minY, 1);
-        const [cx, cy] = getCenterPath(originalPointsRef.current);
-        scaleStartRef.current = {
-            startX: e.clientX,
-            startY: e.clientY,
-            baseWidth: baseWidth,
-            baseHeight: baseHeight,
-            cx,
-            cy,
-        }
-
         originalPointsRef.current = currentPointsArr;
+        const [cx, cy] = getCenterPath(originalPointsRef.current);
+        const ctm = svgRef.current.getScreenCTM();
+        if (!ctm) return;
+
+        const pointerX = (e.clientX - ctm.e) / ctm.a;
+        const pointerY = (e.clientY - ctm.f) / ctm.d;
+
+        const startDist = Math.hypot(pointerX - cx, pointerY - cy);
+
+        scaleStartRef.current = {
+            startDist: Math.max(startDist, 0.0001),
+            initialScale: 1,
+            cx: cx,
+            cy: cy,
+        }
 
         e.currentTarget.setPointerCapture?.(e.pointerId)
     }
@@ -197,21 +198,21 @@ export default function DraggableSettings({
         const ctm = svgRef.current.getScreenCTM();
         if (!ctm) return;
 
-        const dx = (e.clientX - scaleStartRef.current.startX) / ctm.a;
-        const dy = (e.clientY - scaleStartRef.current.startY) / ctm.d;
+        const pointerX = (e.clientX - ctm.e) / ctm.a;
+        const pointerY = (e.clientY - ctm.f) / ctm.d;
 
-        const nextWidth = Math.max(scaleStartRef.current.baseWidth + dx, 1);
-        const nextHeight = Math.max(scaleStartRef.current.baseHeight + dy, 1);
+        const { cx, cy, startDist, initialScale } = scaleStartRef.current;
 
-        let scaleX = nextWidth / scaleStartRef.current.baseWidth;
-        let scaleY = nextHeight / scaleStartRef.current.baseHeight;
+        const currentDist = Math.hypot(pointerX - cx, pointerY - cy);
 
-        // Если надо скейлить обе оси одинаково
-        const uniform = Math.max(scaleX, scaleY);
-        scaleX = uniform;
-        scaleY = uniform;
+        let rawScale = (currentDist / startDist) * initialScale;
 
-        const scaled = scalePoints(originalPointsRef.current, scaleX, scaleY, scaleStartRef.current.cx, scaleStartRef.current.cy);
+        const sensitivity = 0.01;
+        let scale = 1 + (rawScale - 1) * sensitivity;
+
+        scale = Math.max(0.1, Math.min(scale, 10));
+
+        const scaled = scalePoints(originalPointsRef.current, scale, scale, cx, cy);
 
         onDrag?.(id, { points: scaled })
     }
@@ -228,6 +229,10 @@ export default function DraggableSettings({
                 isDraggingRef.current = false
                 isRotatingRef.current = false
                 setDragAngle(null)
+            }
+
+            if (isScalingRef.current) {
+                isScalingRef.current = false;
             }
         }
         window.addEventListener('pointerup', handleGlobalUp)
