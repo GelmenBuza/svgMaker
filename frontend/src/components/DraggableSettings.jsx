@@ -45,6 +45,7 @@ export default function DraggableSettings({
 
     // Рефы для скейла
     const isScalingRef = useRef(false)
+    const scaleBasePointsRef = useRef(null)
     const scaleStartRef = useRef({
         startDist: 1,
         initialScale: 1,
@@ -171,7 +172,7 @@ export default function DraggableSettings({
 
         svgRef.current = e.currentTarget.ownerSVGElement;
         isScalingRef.current = true;
-
+        scaleBasePointsRef.current = currentPointsArr;
         originalPointsRef.current = currentPointsArr;
         const [cx, cy] = getCenterPath(originalPointsRef.current);
         const ctm = svgRef.current.getScreenCTM();
@@ -207,12 +208,12 @@ export default function DraggableSettings({
 
         let rawScale = (currentDist / startDist) * initialScale;
 
-        const sensitivity = 0.04;
+        const sensitivity = 1.1;
         let scale = 1 + (rawScale - 1) * sensitivity;
 
         scale = Math.max(0.1, Math.min(scale, 10));
 
-        const scaled = scalePoints(originalPointsRef.current, scale, scale, cx, cy);
+        const scaled = scalePoints(scaleBasePointsRef.current, scale, scale, cx, cy);
 
         onDrag?.(id, { points: scaled })
     }
@@ -233,6 +234,7 @@ export default function DraggableSettings({
 
             if (isScalingRef.current) {
                 isScalingRef.current = false;
+                scaleBasePointsRef.current = currentPointsArr;
             }
         }
         window.addEventListener('pointerup', handleGlobalUp)
