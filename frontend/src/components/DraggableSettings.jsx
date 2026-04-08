@@ -207,7 +207,7 @@ export default function DraggableSettings({
 
         let rawScale = (currentDist / startDist) * initialScale;
 
-        const sensitivity = 0.01;
+        const sensitivity = 0.04;
         let scale = 1 + (rawScale - 1) * sensitivity;
 
         scale = Math.max(0.1, Math.min(scale, 10));
