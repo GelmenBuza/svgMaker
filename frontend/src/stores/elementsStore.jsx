@@ -1,6 +1,7 @@
 import {create} from "zustand";
 import parsePathData from "../utils/parsePathData.js";
 import pointsArrToString from "../utils/pointsArrToString.js";
+import getCenterPath from "../utils/getCenterPath.js";
 
 export const elementsStore = create((set, get) => ({
     selected: [],
@@ -83,6 +84,36 @@ export const elementsStore = create((set, get) => ({
                     : el
             )
         }));
+    },
+
+    scaleElement: (id, {scaleX, scaleY, origin}) => {
+        set((state) => {
+            const safeScaleX = Math.max(0.05, scaleX);
+            const safeScaleY = Math.max(0.05, scaleY);
+
+            return {
+                elements: state.elements.map(el => {
+                    if (el.id !== id || !el.points?.length) return el;
+
+                    let cx;
+                    let cy;
+
+                    if (Array.isArray(origin) && origin.length === 2) {
+                        [cx, cy] = origin;
+                    } else {
+                        [cx, cy] = getCenterPath(el.points);
+                    }
+                    
+                    const newPoints = scalePoints(el.points, safeScaleX, safeScaleY, cx, cy);
+
+                    return {
+                        ...el,
+                        points: newPoints,
+                        d: pointsArrToString(newPoints)
+                    };
+                })
+            }
+        })
     },
 
     addPoint: (elementId, point, index) => {

@@ -1,9 +1,10 @@
-import {useEffect, useMemo, useRef, useState} from "react";
-import {elementsStore} from "../stores/elementsStore.jsx";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { elementsStore } from "../stores/elementsStore.jsx";
 import parsePathData from "../utils/parsePathData.js";
 import getCenterPath from "../utils/getCenterPath.js";
 import rotatePoints from "../utils/rotatePoints.js";
 import getMinMaxCords from "../utils/getMinMaxCords.js";
+import scalePoints from "../utils/scalePoints.js";
 
 const normalizeAngle = (angle) => {
     angle = angle % 360;
@@ -12,20 +13,20 @@ const normalizeAngle = (angle) => {
 };
 
 export default function DraggableSettings({
-                                              id,
-                                              onDrag,
-                                              onRotateCommit
-                                          }) {
+    id,
+    onDrag,
+    onRotateCommit
+}) {
 
-    const {elements, setElementRotation} = elementsStore()
+    const { elements, setElementRotation } = elementsStore()
 
     const customEll = useMemo(() =>
-            elements.find(elem => elem.id === id),
+        elements.find(elem => elem.id === id),
         [elements, id]
     )
 
     const currentPointsArr = useMemo(() => parsePathData(customEll.d), [customEll?.d])
-    const {min, max} = useMemo(() => getMinMaxCords(currentPointsArr), [currentPointsArr])
+    const { min, max } = useMemo(() => getMinMaxCords(currentPointsArr), [currentPointsArr])
 
     const originalPointsRef = useRef(null)
     const originalCenterRef = useRef(null)
@@ -39,8 +40,19 @@ export default function DraggableSettings({
 
     const [dragAngle, setDragAngle] = useState(null)
     const isDraggingRef = useRef(false)  // используется для pointer capture
-    const rotationStartRef = useRef({startAngle: 0, initialRotate: 0})
+    const rotationStartRef = useRef({ startAngle: 0, initialRotate: 0 })
     const svgRef = useRef(null)
+
+    // Рефы для скейла
+    const isScalingRef = useRef(false)
+    const scaleStartRef = useRef({
+        startX: 0,
+        startY: 0,
+        baseWidth: 1,
+        baseHeight: 1,
+        cx: 0,
+        cy: 0,
+    })
 
     if (!customEll) return null
     if (!currentPointsArr.length) return null
@@ -123,7 +135,7 @@ export default function DraggableSettings({
     const handleDragMove = (e) => {
         if (!isDraggingRef.current || !svgRef.current) return
         const currentAngle = getAngleFromCenter(e.clientX, e.clientY)
-        const {startAngle, initialRotate} = rotationStartRef.current
+        const { startAngle, initialRotate } = rotationStartRef.current
 
         setDragAngle(currentAngle)
 
@@ -139,7 +151,7 @@ export default function DraggableSettings({
         const rotated = rotatePoints(originalPointsRef.current, newRotate, cxRef.current, cyRef.current)
         requestAnimationFrame(() => {
             setElementRotation(id, newRotate)
-            onDrag?.(id, {points: rotated, rotate: newRotate})
+            onDrag?.(id, { points: rotated, rotate: newRotate })
         })
     }
 
@@ -153,6 +165,61 @@ export default function DraggableSettings({
             })
             e.currentTarget.releasePointerCapture?.(e.pointerId)
         }
+    }
+    // Обработчик начала скейла
+    const handleScaleStart = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        svgRef.current = e.currentTarget.ownerSVGElement;
+        isScalingRef.current = true;
+
+        const baseWidth = Math.max(maxX - minX, 1);
+        const baseHeight = Math.max(maxY - minY, 1);
+        const [cx, cy] = getCenterPath(originalPointsRef.current);
+        scaleStartRef.current = {
+            startX: e.clientX,
+            startY: e.clientY,
+            baseWidth: baseWidth,
+            baseHeight: baseHeight,
+            cx,
+            cy,
+        }
+
+        originalPointsRef.current = currentPointsArr;
+
+        e.currentTarget.setPointerCapture?.(e.pointerId)
+    }
+    // Обработчик движения скейла
+    const handleScaleMove = (e) => {
+        if (!isScalingRef.current || !svgRef.current) return;
+
+        const ctm = svgRef.current.getScreenCTM();
+        if (!ctm) return;
+
+        const dx = (e.clientX - scaleStartRef.current.startX) / ctm.a;
+        const dy = (e.clientY - scaleStartRef.current.startY) / ctm.d;
+
+        const nextWidth = Math.max(scaleStartRef.current.baseWidth + dx, 1);
+        const nextHeight = Math.max(scaleStartRef.current.baseHeight + dy, 1);
+
+        let scaleX = nextWidth / scaleStartRef.current.baseWidth;
+        let scaleY = nextHeight / scaleStartRef.current.baseHeight;
+
+        // Если надо скейлить обе оси одинаково
+        const uniform = Math.max(scaleX, scaleY);
+        scaleX = uniform;
+        scaleY = uniform;
+
+        const scaled = scalePoints(originalPointsRef.current, scaleX, scaleY, scaleStartRef.current.cx, scaleStartRef.current.cy);
+
+        onDrag?.(id, { points: scaled })
+    }
+    // Обработчик конца скейла
+    const handleScaleEnd = (e) => {
+        if (!isScalingRef.current) return;
+        isScalingRef.current = false;
+        e.currentTarget.releasePointerCapture?.(e.pointerId);
     }
 
     useEffect(() => {
@@ -199,6 +266,36 @@ export default function DraggableSettings({
                 onPointerLeave={handleDragEnd}
             />
             <rect
+                x={`${minX - 15}`}
+                y={`${minY - 15}`}
+                width={`8`}
+                height={`8`}
+                fill="#4CAF50"
+                stroke="#2E7D32"
+                strokeWidth={1}
+                style={{ cursor: 'nwse-resize', pointerEvents: 'all' }}
+                onPointerDown={handleScaleStart}
+                onPointerMove={handleScaleMove}
+                onPointerUp={handleScaleEnd}
+                onPointerLeave={handleScaleEnd}
+            />
+
+            <rect
+                x={maxX + 6}
+                y={maxY + 6}
+                width={8}
+                height={8}
+                fill="#4CAF50"
+                stroke="#2E7D32"
+                strokeWidth={1}
+                style={{ cursor: 'nwse-resize', pointerEvents: 'all' }}
+                onPointerDown={handleScaleStart}
+                onPointerMove={handleScaleMove}
+                onPointerUp={handleScaleEnd}
+                onPointerLeave={handleScaleEnd}
+            />
+
+            <rect
                 x={`${minX - 10}`}
                 y={`${minY - 10}`}
                 width={`${edgeLength}`}
@@ -207,7 +304,7 @@ export default function DraggableSettings({
                 stroke="#4CAF50"
                 strokeDasharray="4 2"
                 strokeWidth={1}
-                style={{pointerEvents: 'none'}}
+                style={{ pointerEvents: 'none' }}
             />
         </>
     )

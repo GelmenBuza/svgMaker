@@ -74,7 +74,6 @@ export function useChatSocket() {
         const socket = socketRef.current;
         const room = activeRoomRef.current;
         if (!socket || !room) return;
-
         socket.emit("chat:message", { room, content: message }, (ack) => {
             if (!ack.ok) {
                 setStatus("error");
