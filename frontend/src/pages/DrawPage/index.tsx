@@ -9,7 +9,9 @@ import CustomContextMenu from "../../components/CustomContextMenu/index.jsx";
 import parsePathData from "../../utils/parsePathData.js";
 import Chat from "../../components/Chat";
 import NavMenu from '../../components/NavMenu';
-
+import { useNavigate, useSearchParams } from 'react-router';
+import { userStore } from '../../stores/userStore';
+import userApi from '../../api/userApi';
 
 const SVG = ({ell, svgWidth, handleContextMenu, onSvgClick, isTrackingMode}) => {
     const {customizableElementId, updateElements} = elementsStore()
@@ -67,6 +69,7 @@ const generateSVGCode = (elements, svgWidth) => {
 function DrawPage() {
     const {
         areaWidth,
+        areaHeight,
         elements,
         updateElements,
         customizableElementId,
@@ -78,6 +81,43 @@ function DrawPage() {
 
     const [isTrackingMode, setIsTrackingMode] = useState(false)
     const [activeDIYPathId, setActiveDIYPathId] = useState(null)
+
+    // Получаем проект из URL
+    const [searchParams] = useSearchParams();
+    const projectId = searchParams.get('projectId');
+    const {user} = userStore();
+    const navigate = useNavigate();
+    // Если пользователь не авторизован, перенаправляем на логин
+    useEffect(() => {
+        if (!user) {
+            navigate('/');
+            return;
+        }
+    }, [user, navigate]);
+    
+    // Если проект не найден, перенаправляем на профиль
+    useEffect(() => {
+        if (!projectId) {
+            navigate('/profile');
+            return;
+        }
+    }, [projectId, navigate]);
+
+    // Сохранение снапшота проекта
+    const saveProjectSnapshot = async () => {
+        const snapshot = {
+            width: areaWidth,
+            height: areaHeight,
+            elements: elements,
+            timestamp: new Date().toISOString()
+        }
+        console.log('snapshot', snapshot);
+        const response = await userApi.updateProject(projectId, snapshot);
+        console.log('response', response);
+        if (response.error) {
+            console.error(response.error);
+        }
+    }
 
     const handleContextMenu = (e) => {
         e.preventDefault()
@@ -221,6 +261,7 @@ function DrawPage() {
                 openSettings: openSettings,
                 onDrag: updateElements,
                 handleContextMenu: handleContextMenu,
+                // onDragEnd: () => saveProjectSnapshot()
             }
 
             switch (type) {

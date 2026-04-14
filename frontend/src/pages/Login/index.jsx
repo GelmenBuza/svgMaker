@@ -31,7 +31,7 @@ export default function Login() {
             }
             setUser(response.user);
             console.log("user", getUser());
-            navigate('/draw');
+            navigate('/profile');
         } catch (error) {
             console.error("Error in login:", error);
             newErrors.error = error.message;

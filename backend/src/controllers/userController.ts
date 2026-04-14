@@ -36,7 +36,6 @@ const createProject = async (req: Request, res: Response) => {
         if (!userId) {
             return res.status(401).json({error: "Unauthorized"});
         }
-
         const {name} = req.body as {name?: string};
         if (!name) {
             return res.status(400).json({error: "Name is required"});
