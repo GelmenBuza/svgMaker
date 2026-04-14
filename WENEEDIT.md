@@ -1,0 +1,10 @@
+- Сохранение проектов в БД (MVP #1): сейчас состояние живет в клиентском store (frontend/src/stores/elementsStore.jsx), добавьте сущность Project + ProjectVersion в Prisma и REST endpoints (save/load/list).
+- Undo/Redo + History timeline (MVP #2): для редактора это must-have, удобно реализуется через стек snapshot’ов состояния elements.
+- Импорт/экспорт SVG и JSON: сейчас есть генерация кода на экране (frontend/src/pages/DrawPage/index.tsx), добавьте Download .svg, Upload .svg, и внутренний JSON-формат для точного восстановления редактируемых points.
+- Панель слоев (Layers): порядок элементов, скрытие/блокировка, дублирование, группировка. Это резко повышает UX при работе с несколькими path.
+- Сетка, привязка и направляющие: snap to grid, привязка к узлам, показывать координаты курсора — это ускорит точное рисование.
+- Профиль и админка: в NavMenu уже есть ссылки на /profile и /admin, но в роутинге (frontend/src/App.jsx) этих страниц пока нет — можно превратить в полноценные экраны пользователя/ролей.
+- Shared links / публичные шаблоны: “поделиться SVG по ссылке”, “галерея шаблонов”, “клонировать шаблон в редактор”.
+- Расширенный чат как коллаборация: не только general, а комнаты по проектам, presence (“кто онлайн”), системные события “User X изменил path”.
+- Тесты + CI: сейчас тестовых файлов не видно; добавить unit-тесты для utils (parse/rotate/serialize) и API smoke-тесты, плюс GitHub Actions.
+- Hardening auth/security: привести cookie path к единому значению (в authController есть расхождение для refresh), rate-limit для auth/chat, валидация payload через schema (например, Zod).
