@@ -9,10 +9,10 @@ const authMiddleware = async (
     next: NextFunction,
 ) => {
     try {
-        if (!req.headers.authorization) {
+        if (!req.cookies.accessToken) {
             return res.status(401).json({error: "Not authorized"});
         }
-        const AccessToken = req.headers.authorization.split(" ")[1];
+        const AccessToken = req.cookies.accessToken;
         if (!AccessToken) {
             return res.status(401).json({error: "Authentication required"});
         }

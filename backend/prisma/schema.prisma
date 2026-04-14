@@ -7,20 +7,51 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  username  String?
-  role      String
-  password  String
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  username      String?
+  role          String
+  password      String
   refresh_token String?
-  createdAt DateTime @default(now())
+  createdAt     DateTime  @default(now())
+
+  projects      Project[]
+}
+
+model Project {
+  id          Int              @id @default(autoincrement())
+  userId      Int
+  name        String           @default("Untitled")
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  lastVersion Int              @default(0)
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versions    ProjectVersion[]
+
+  @@index([userId, updatedAt])
+}
+
+model ProjectVersion {
+  id         Int      @id @default(autoincrement())
+  projectId  Int
+  version    Int
+  snapshot   Json
+  message    String?
+  isAutosave Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, version])
+  @@index([projectId, createdAt])
 }
 
 model Messages {
-  id         Int      @id @default(autoincrement())
-  room       String   @default("public")
-  sender_id  Int
-  nickname   String?
-  content    String
-  createdAt  DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  room      String   @default("public")
+  sender_id Int
+  nickname  String?
+  content   String
+  createdAt DateTime @default(now())
 }
