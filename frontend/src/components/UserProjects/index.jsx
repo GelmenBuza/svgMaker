@@ -4,7 +4,7 @@ import userApi from '../../api/userApi.js';
 import { Link } from 'react-router';
 
 export default function UserProjects() {
-    const {user} = userStore();
+    const {saveProjectsToStore} = userStore();
     const [projects, setProjects] = useState([]);
 
     const getUserProjects = async () => {
@@ -13,6 +13,7 @@ export default function UserProjects() {
             console.error(response.error);
         }
         setProjects(response.projects);
+        saveProjectsToStore(response.projects);
     }
 
     const createProject = async () => {
@@ -20,6 +21,7 @@ export default function UserProjects() {
         if (response.error) {
             console.error(response.error);
         }
+        saveProjectsToStore([...projects, response.project]);
         getUserProjects();
     }
 

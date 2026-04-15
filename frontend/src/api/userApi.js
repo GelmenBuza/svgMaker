@@ -25,11 +25,14 @@ const userApi = {
         }
         return await response.json();
     },
-    updateProject: async (projectId, name) => {
+    updateProject: async (projectId, name, snapshot) => {
         const response = await fetch(`${BASE_URL}/projects`, {
             method: 'PUT',
             credentials: 'include',
-            body: JSON.stringify({id: projectId, name: name}),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({id: projectId, name: name, snapshot: snapshot}),
         });
         if (!response.ok) {
             return {error: (await response.json()).message};

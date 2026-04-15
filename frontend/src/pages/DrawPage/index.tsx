@@ -84,9 +84,13 @@ function DrawPage() {
 
     // Получаем проект из URL
     const [searchParams] = useSearchParams();
-    const projectId = searchParams.get('projectId');
-    const {user} = userStore();
+    const projectId = Number(searchParams.get('projectId'));
+    const {user, projects} = userStore();
     const navigate = useNavigate();
+
+    // Референс таймера сохранения снапшота
+    const timerRef = useRef(null);
+
     // Если пользователь не авторизован, перенаправляем на логин
     useEffect(() => {
         if (!user) {
@@ -105,6 +109,9 @@ function DrawPage() {
 
     // Сохранение снапшота проекта
     const saveProjectSnapshot = async () => {
+        console.log('saveProjectSnapshot');
+        if (!user) return;
+        if (!Number.isInteger(projectId) || projectId <= 0) return;
         const snapshot = {
             width: areaWidth,
             height: areaHeight,
@@ -112,12 +119,33 @@ function DrawPage() {
             timestamp: new Date().toISOString()
         }
         console.log('snapshot', snapshot);
-        const response = await userApi.updateProject(projectId, snapshot);
+        const projectName = projects.find(project => project.id === projectId).name;
+        const response = await userApi.updateProject(projectId, projectName, snapshot);
         console.log('response', response);
         if (response.error) {
             console.error(response.error);
         }
     }
+    useEffect(() => {
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+        }
+        console.log('projects', projects);
+        console.log('projectId', projectId);
+        console.log('projects.find(project => project.id === projectId)', projects.find(project => project.id === projectId));
+        timerRef.current = setTimeout(() => {
+            if (projects.find(project => project.id === projectId)) {
+                saveProjectSnapshot();
+            } else {
+                return;
+            }
+        }, 1000);
+        return () => {
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+            }
+        }
+    }, [elements, areaWidth, areaHeight]);
 
     const handleContextMenu = (e) => {
         e.preventDefault()
