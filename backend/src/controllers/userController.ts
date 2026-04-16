@@ -19,6 +19,7 @@ const getProjects = async (req: Request, res: Response) => {
             select: {
                 id: true,
                 name: true,
+                lastVersion: true,
                 updatedAt: true,
             },
         });
@@ -30,6 +31,37 @@ const getProjects = async (req: Request, res: Response) => {
     }
 }
 
+const getProjectSnapshot = async (req: Request, res: Response) => {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({error: "Unauthorized"});
+        }
+        const {projectId, version} = req.params as {projectId?: number, version?: number};
+        if (!projectId || !version) {
+            return res.status(400).json({error: "project Id and version are required"});
+        }
+        const normalizedProjectId = Number(projectId);
+        if (isNaN(normalizedProjectId)) {
+            return res.status(400).json({error: "Project id is not a number"});
+        }
+        const normalizedVersion = Number(version);
+        if (isNaN(normalizedVersion)) {
+            return res.status(400).json({error: "Version is not a number"});
+        }
+        const projectSnapshot = await prisma.projectVersion.findFirst({
+            where: {projectId: normalizedProjectId, version: normalizedVersion},
+            select: {snapshot: true},
+        });
+        if (!projectSnapshot) {
+            return res.status(404).json({error: "Project snapshot not found"});
+        }
+        res.json({snapshot: projectSnapshot.snapshot});
+    } catch (error) {
+        console.error("Error in getProjectSnapshot:", error);
+        res.status(500).json({error: "Internal server error"});
+    }
+}
 const createProject = async (req: Request, res: Response) => {
     try {
         const userId = req.userId;
@@ -101,4 +133,4 @@ const updateProject = async (req: Request, res: Response) => {
     }
 }
 
-export {getMe, getProjects, createProject, updateProject};
+export {getMe, getProjects, createProject, updateProject, getProjectSnapshot};

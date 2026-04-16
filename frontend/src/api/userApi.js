@@ -7,7 +7,17 @@ const userApi = {
             credentials: 'include',
         });
         if (!response.ok) {
-            return {error: (await response.json()).message};
+            return { error: (await response.json()).message };
+        }
+        return await response.json();
+    },
+    getProjectSnapshot: async (projectId, version) => {
+        const response = await fetch(`${BASE_URL}/projects/snapshot/${projectId}/${version}`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            return { error: (await response.json()).message };
         }
         return await response.json();
     },
@@ -18,10 +28,10 @@ const userApi = {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({name: name}),
+            body: JSON.stringify({ name: name }),
         });
         if (!response.ok) {
-            return {error: (await response.json()).message};
+            return { error: (await response.json()).message };
         }
         return await response.json();
     },
@@ -32,10 +42,10 @@ const userApi = {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({id: projectId, name: name, snapshot: snapshot}),
+            body: JSON.stringify({ id: projectId, name: name, snapshot: snapshot }),
         });
         if (!response.ok) {
-            return {error: (await response.json()).message};
+            return { error: (await response.json()).message };
         }
         return await response.json();
     },
@@ -43,10 +53,10 @@ const userApi = {
         const response = await fetch(`${BASE_URL}/projects`, {
             method: 'DELETE',
             credentials: 'include',
-            body: JSON.stringify({id: projectId}),
+            body: JSON.stringify({ id: projectId }),
         });
         if (!response.ok) {
-            return {error: (await response.json()).message};
+            return { error: (await response.json()).message };
         }
         return await response.json();
     },

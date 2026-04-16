@@ -1,20 +1,21 @@
-import {useEffect, useMemo, useRef, useState} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './style.module.css';
 import ElementSettings from "../../components/ElementsSettings/index.jsx";
-import {elementsStore} from "../../stores/elementsStore.jsx";
+import { elementsStore } from "../../stores/elementsStore.jsx";
 import DraggablePath from "../../components/DraggablePath.jsx";
 import DraggableSettings from "../../components/DraggableSettings.jsx";
-import DraggableDots from "../../components/DraggableDots";
+import DraggableDots from "../../components/DraggableDots/index.jsx";
 import CustomContextMenu from "../../components/CustomContextMenu/index.jsx";
 import parsePathData from "../../utils/parsePathData.js";
-import Chat from "../../components/Chat";
-import NavMenu from '../../components/NavMenu';
+import Chat from "../../components/Chat/index.jsx";
+import NavMenu from '../../components/NavMenu/index.jsx';
 import { useNavigate, useSearchParams } from 'react-router';
-import { userStore } from '../../stores/userStore';
-import userApi from '../../api/userApi';
+import { userStore } from '../../stores/userStore.jsx';
+import { projectsRequestStore } from '../../stores/projectsRequestStore.jsx';
+import userApi from '../../api/userApi.js';
 
-const SVG = ({ell, svgWidth, handleContextMenu, onSvgClick, isTrackingMode}) => {
-    const {customizableElementId, updateElements} = elementsStore()
+const SVG = ({ ell, svgWidth, handleContextMenu, onSvgClick, isTrackingMode }) => {
+    const { customizableElementId, updateElements } = elementsStore()
     const svgRef = useRef(null)
 
     const handleClick = (e) => {
@@ -36,16 +37,16 @@ const SVG = ({ell, svgWidth, handleContextMenu, onSvgClick, isTrackingMode}) => 
             xmlns="http://www.w3.org/2000/svg"
 
             onClick={handleClick}
-            style={{cursor: isTrackingMode ? 'crosshair' : 'default'}}
+            style={{ cursor: isTrackingMode ? 'crosshair' : 'default' }}
         >
             {customizableElementId &&
                 <DraggableSettings key={`dragSettings-${customizableElementId}`} id={customizableElementId}
-                                   onDrag={updateElements}
-                                   onRotateCommit={updateElements}
+                    onDrag={updateElements}
+                    onRotateCommit={updateElements}
                 />}
             {ell}
             <DraggableDots key={`dragDots-${customizableElementId}`} id={customizableElementId} onDrag={updateElements}
-                           handleContextMenu={handleContextMenu}/>
+                handleContextMenu={handleContextMenu} />
         </svg>
     )
 }
@@ -65,15 +66,73 @@ const generateSVGCode = (elements, svgWidth) => {
     return `<svg width="${svgWidth}" viewBox="0 0 ${svgWidth} ${svgWidth}" xmlns="http://www.w3.org/2000/svg">\n${ell}\n</svg>`
 }
 
+const enableAutoSave = () => {
+    const { requestQueue, removeRequest, isRequestQueueNotEmpty, getFirstRequest } = projectsRequestStore();
+    useEffect(() => {
+        const autoSave = async (counter = 0) => {
+            if (counter > 10) {
+                return;
+            }
+            if (isRequestQueueNotEmpty()) {
+                const firstRequest = getFirstRequest();
+                console.log('firstRequest', firstRequest);
+                if (firstRequest) {
+                    try {
+                        const request = await userApi.updateProject(firstRequest.projectId, firstRequest.projectName, firstRequest.snapshot);
+                        if (request.error) {
+                            autoSave(counter + 1);
+                            console.error(request.error);
+                        } else {
+                            removeRequest(firstRequest);
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+            }
+        }
+        autoSave();
+    }, [requestQueue]);
+}
+
+const loadProject = async (projectId, user, projects, setWidth, setHeight, updateElements, clearElements) => {
+    if (!user) return;
+    clearElements();
+    let lastVersion = projects.find(project => project.id === projectId).lastVersion;
+    if (!lastVersion) {
+        const newProjects = await userApi.getUserProjects();
+        if (newProjects.error) {
+            console.error(newProjects.error);
+            return;
+        }
+        lastVersion = newProjects.find(project => project.id === projectId).lastVersion;
+        if (!lastVersion) {
+            console.error('Last version not found');
+            return;
+        }
+    };
+    const snapshot = await userApi.getProjectSnapshot(projectId, lastVersion);
+    if (snapshot.error) {
+        console.error(snapshot.error);
+        return;
+    }
+    setWidth(snapshot.snapshot.width);
+    setHeight(snapshot.snapshot.height);
+    updateElements((prev) => [...prev, ...snapshot.snapshot.elements]);
+}
+
 
 function DrawPage() {
     const {
         areaWidth,
         areaHeight,
+        setWidth,
+        setHeight,
         elements,
         updateElements,
         customizableElementId,
         setCustomizableElement,
+        clearElements,
     } = elementsStore()
     const [counter, setCounter] = useState(0)
     const [menu, setMenu] = useState(null)
@@ -85,11 +144,25 @@ function DrawPage() {
     // Получаем проект из URL
     const [searchParams] = useSearchParams();
     const projectId = Number(searchParams.get('projectId'));
-    const {user, projects} = userStore();
+    const { user, projects } = userStore();
     const navigate = useNavigate();
+    const [isFirtsSave, setIsFirtsSave] = useState(true);
 
     // Референс таймера сохранения снапшота
     const timerRef = useRef(null);
+
+    // Очередь запросов на сохранение снапшота проекта
+    const { addRequest } = projectsRequestStore();
+
+    // Включаем автосохранение
+    enableAutoSave()
+
+    // Загружаем проект
+    useEffect(() => {
+        if (!user) return;
+        if (!Number.isInteger(projectId) || projectId <= 0) return;
+        loadProject(projectId, user, projects, setWidth, setHeight, updateElements, clearElements)
+    }, [user, projectId])
 
     // Если пользователь не авторизован, перенаправляем на логин
     useEffect(() => {
@@ -98,7 +171,7 @@ function DrawPage() {
             return;
         }
     }, [user, navigate]);
-    
+
     // Если проект не найден, перенаправляем на профиль
     useEffect(() => {
         if (!projectId) {
@@ -107,9 +180,12 @@ function DrawPage() {
         }
     }, [projectId, navigate]);
 
-    // Сохранение снапшота проекта
+    // Сохранение снапшота проекта, если это не первое сохранение
     const saveProjectSnapshot = async () => {
-        console.log('saveProjectSnapshot');
+        if (isFirtsSave) {
+            setIsFirtsSave(false);
+            return
+        }
         if (!user) return;
         if (!Number.isInteger(projectId) || projectId <= 0) return;
         const snapshot = {
@@ -118,21 +194,13 @@ function DrawPage() {
             elements: elements,
             timestamp: new Date().toISOString()
         }
-        console.log('snapshot', snapshot);
         const projectName = projects.find(project => project.id === projectId).name;
-        const response = await userApi.updateProject(projectId, projectName, snapshot);
-        console.log('response', response);
-        if (response.error) {
-            console.error(response.error);
-        }
+        addRequest(projectId, projectName, snapshot);
     }
     useEffect(() => {
         if (timerRef.current) {
             clearTimeout(timerRef.current);
         }
-        console.log('projects', projects);
-        console.log('projectId', projectId);
-        console.log('projects.find(project => project.id === projectId)', projects.find(project => project.id === projectId));
         timerRef.current = setTimeout(() => {
             if (projects.find(project => project.id === projectId)) {
                 saveProjectSnapshot();
@@ -149,7 +217,7 @@ function DrawPage() {
 
     const handleContextMenu = (e) => {
         e.preventDefault()
-        setMenu({x: e.clientX, y: e.clientY, id: e.currentTarget.id || customizableElementId, svg: e.currentTarget.ownerSVGElement})
+        setMenu({ x: e.clientX, y: e.clientY, id: e.currentTarget.id || customizableElementId, svg: e.currentTarget.ownerSVGElement })
     }
 
     useEffect(() => {
@@ -302,7 +370,7 @@ function DrawPage() {
                             fill={el.fill}
                             stroke={el.stroke}
                             strokeWidth={el.strokeWidth}
-                            // rotate={el.rotate}
+                        // rotate={el.rotate}
                         />
                     )
                 default:
@@ -315,7 +383,7 @@ function DrawPage() {
 
     return (
         <>
-            <NavMenu/>
+            <NavMenu />
             <div className={styles.mainContainer}>
                 <div className={styles.svgContainer}>
                     <div className={styles.createBtn}>
@@ -335,13 +403,13 @@ function DrawPage() {
 
 
                     <SVG ell={renderedElements}
-                         svgWidth={areaWidth}
-                         handleContextMenu={handleContextMenu}
-                         onSvgClick={handleSvgClick}
-                         isTrackingMode={isTrackingMode}
+                        svgWidth={areaWidth}
+                        handleContextMenu={handleContextMenu}
+                        onSvgClick={handleSvgClick}
+                        isTrackingMode={isTrackingMode}
                     />
 
-                    <h2 style={{cursor: 'pointer', fontWeight: 'bold'}}>SVG код</h2>
+                    <h2 style={{ cursor: 'pointer', fontWeight: 'bold' }}>SVG код</h2>
                     <pre style={{
                         textAlign: 'left',
                         background: '#1e1e1e',
@@ -362,9 +430,9 @@ function DrawPage() {
                     </pre>
                 </div>
             </div>
-            {menu && (<CustomContextMenu data={{menuRef, menu}}/>)}
-            {customizableElementId && <ElementSettings/>}
-            <Chat/>
+            {menu && (<CustomContextMenu data={{ menuRef, menu }} />)}
+            {customizableElementId && <ElementSettings />}
+            <Chat />
         </>
     )
 }

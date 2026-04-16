@@ -11,6 +11,8 @@ export const elementsStore = create((set, get) => ({
     customizableElementId: null,
     elementRotation: {},
 
+    setWidth: (width) => set({areaWidth: width}),
+    setHeight: (height) => set({areaHeight: height}),
     setElementRotation: (id, angle) => {
         set((state) => ({
             elementRotation: {
@@ -180,5 +182,6 @@ export const elementsStore = create((set, get) => ({
     getCustomizableElement: () => {
         const state = get();
         return state.elements.find(el => el.id === state.customizableElementId);
-    }
+    },
+    clearElements: () => set({elements: []}),
 }));

@@ -1,9 +1,9 @@
 import './App.css'
 import { BrowserRouter, Routes, Route } from 'react-router';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import DrawPage from './pages/DrawPage';
-import ProfilePage from './pages/ProfilePage';
+import Login from './pages/Login/index.jsx';
+import Register from './pages/Register/index.jsx';
+import DrawPage from './pages/DrawPage/index.jsx';
+import ProfilePage from './pages/ProfilePage/index.jsx';
 
 function App() {
 
