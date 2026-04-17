@@ -13,6 +13,8 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { userStore } from '../../stores/userStore.jsx';
 import { projectsRequestStore } from '../../stores/projectsRequestStore.jsx';
 import userApi from '../../api/userApi.js';
+import CustomNotifications from '../../components/CustomNotifications/index.jsx';
+import { notificationsStore } from '../../stores/notificationsStore.jsx';
 
 const SVG = ({ ell, svgWidth, handleContextMenu, onSvgClick, isTrackingMode }) => {
     const { customizableElementId, updateElements } = elementsStore()
@@ -105,20 +107,21 @@ const loadProject = async (projectId, user, projects, setWidth, setHeight, setEl
             console.error(newProjects.error);
             return;
         }
-        lastVersion = newProjects.find(project => project.id === projectId).lastVersion;
+        lastVersion = newProjects.projects.find(project => project.id === projectId).lastVersion;
         if (!lastVersion) {
-            console.error('Last version not found');
+            console.warn('Empty project');
             return;
         }
-    };
+    }
     const snapshot = await userApi.getProjectSnapshot(projectId, lastVersion);
     if (snapshot.error) {
-        console.error(snapshot.error);
+        console.alert(snapshot.error);
         return;
     }
+
+    setElements([...snapshot.snapshot.elements]);
     setWidth(snapshot.snapshot.width);
     setHeight(snapshot.snapshot.height);
-    setElements([...snapshot.snapshot.elements]);
 }
 
 
@@ -154,6 +157,7 @@ function DrawPage() {
 
     // Очередь запросов на сохранение снапшота проекта
     const { addRequest } = projectsRequestStore();
+    const { addNotificationToStack } = notificationsStore();
 
     // Включаем автосохранение
     enableAutoSave()
@@ -248,6 +252,7 @@ function DrawPage() {
 
         updateElements((prev) => [...prev, newPathData])
         setCounter(prev => prev + 1)
+        addNotificationToStack({ message: 'Новый Path добавлен' }, 'notification');
     }
 
     const openSettings = (id) => {
@@ -274,6 +279,7 @@ function DrawPage() {
         setActiveDIYPathId(id)
         setIsTrackingMode(true)
         setCounter(prev => prev + 1)
+        addNotificationToStack({ message: 'DIY режим включен: кликай по SVG для добавления точек' }, 'notification');
     }
 
     const handleSvgClick = (x, y) => {
@@ -434,6 +440,7 @@ function DrawPage() {
             {menu && (<CustomContextMenu data={{ menuRef, menu }} />)}
             {customizableElementId && <ElementSettings />}
             <Chat />
+            <CustomNotifications />
         </>
     )
 }
