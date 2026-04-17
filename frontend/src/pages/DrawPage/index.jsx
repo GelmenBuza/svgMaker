@@ -95,7 +95,7 @@ const enableAutoSave = () => {
     }, [requestQueue]);
 }
 
-const loadProject = async (projectId, user, projects, setWidth, setHeight, updateElements, clearElements) => {
+const loadProject = async (projectId, user, projects, setWidth, setHeight, setElements, clearElements) => {
     if (!user) return;
     clearElements();
     let lastVersion = projects.find(project => project.id === projectId).lastVersion;
@@ -118,7 +118,7 @@ const loadProject = async (projectId, user, projects, setWidth, setHeight, updat
     }
     setWidth(snapshot.snapshot.width);
     setHeight(snapshot.snapshot.height);
-    updateElements((prev) => [...prev, ...snapshot.snapshot.elements]);
+    setElements([...snapshot.snapshot.elements]);
 }
 
 
@@ -133,6 +133,7 @@ function DrawPage() {
         customizableElementId,
         setCustomizableElement,
         clearElements,
+        setElements,
     } = elementsStore()
     const [counter, setCounter] = useState(0)
     const [menu, setMenu] = useState(null)
@@ -161,7 +162,7 @@ function DrawPage() {
     useEffect(() => {
         if (!user) return;
         if (!Number.isInteger(projectId) || projectId <= 0) return;
-        loadProject(projectId, user, projects, setWidth, setHeight, updateElements, clearElements)
+        loadProject(projectId, user, projects, setWidth, setHeight, setElements, clearElements)
     }, [user, projectId])
 
     // Если пользователь не авторизован, перенаправляем на логин

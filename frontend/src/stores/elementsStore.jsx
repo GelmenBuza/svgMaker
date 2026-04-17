@@ -41,6 +41,8 @@ export const elementsStore = create((set, get) => ({
 
     isSelected: (id) => get().selected.includes(id),
 
+    setElements: (elements) => set({elements}),
+
     updateElements: (arg1, arg2) => set((state) => {
         if (typeof arg1 === 'function') {
             return {elements: arg1(state.elements)};
