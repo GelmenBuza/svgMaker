@@ -16,6 +16,10 @@ import userApi from '../../api/userApi.js';
 import CustomNotifications from '../../components/CustomNotifications/index.jsx';
 import { notificationsStore } from '../../stores/notificationsStore.jsx';
 
+const pushErrorNotification = (message) => {
+    notificationsStore.getState().addNotificationToStack({ message }, 'alert');
+}
+
 const SVG = ({ ell, svgWidth, handleContextMenu, onSvgClick, isTrackingMode }) => {
     const { customizableElementId, updateElements } = elementsStore()
     const svgRef = useRef(null)
@@ -83,11 +87,13 @@ const enableAutoSave = () => {
                         const request = await userApi.updateProject(firstRequest.projectId, firstRequest.projectName, firstRequest.snapshot);
                         if (request.error) {
                             autoSave(counter + 1);
+                            pushErrorNotification(request.error);
                             console.error(request.error);
                         } else {
                             removeRequest(firstRequest);
                         }
                     } catch (error) {
+                        pushErrorNotification('Ошибка при сохранении проекта');
                         console.error(error);
                     }
                 }
@@ -104,18 +110,21 @@ const loadProject = async (projectId, user, projects, setWidth, setHeight, setEl
     if (!lastVersion) {
         const newProjects = await userApi.getUserProjects();
         if (newProjects.error) {
+            pushErrorNotification(newProjects.error);
             console.error(newProjects.error);
             return;
         }
         lastVersion = newProjects.projects.find(project => project.id === projectId).lastVersion;
         if (!lastVersion) {
+            notificationsStore.getState().addNotificationToStack({ message: 'Проект пока пуст' }, 'notification');
             console.warn('Empty project');
             return;
         }
     }
     const snapshot = await userApi.getProjectSnapshot(projectId, lastVersion);
     if (snapshot.error) {
-        console.alert(snapshot.error);
+        pushErrorNotification(snapshot.error);
+        console.error(snapshot.error);
         return;
     }
 

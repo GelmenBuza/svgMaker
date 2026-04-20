@@ -3,6 +3,7 @@ import style from './style.module.css';
 import { userStore } from '../../stores/userStore';
 import authApi from '../../api/authApi.js';
 import { useNavigate } from 'react-router';
+import setAllStoresToStart from '../../utils/setAllStoresToStart.js';
 
 export default function NavMenu() {
     const { user } = userStore();
@@ -11,6 +12,7 @@ export default function NavMenu() {
     const isAdmin = user?.role === 'admin';
 
     const logout = async () => {
+        setAllStoresToStart();
         const response = await authApi.logout();
         if (response.message) {
             userStore.setState({ user: null });
@@ -23,11 +25,10 @@ export default function NavMenu() {
 
     return (
         <nav className={style["nav"]}>
-            {/* <Link to="/" className={style["link"]}>Home</Link> */}
             {isLoggedIn ? (
                 <>
                     <Link to="/draw" className={style["link"]} >Draw</Link>
-                    <Link to="/profile" className={style["link"]}>{user.username}</Link>
+                    <Link to="/profile" className={style["link"]} onClick={() => setAllStoresToStart()}>{user.username}</Link>
                     {isAdmin ? (
                         <Link to="/admin" className={style["link"]}>Admin</Link>
                     ) : null}

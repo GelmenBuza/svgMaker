@@ -11,6 +11,16 @@ export const elementsStore = create((set, get) => ({
     customizableElementId: null,
     elementRotation: {},
 
+    // Сброс всех значений
+
+    clearSelected: () => set({selected: []}),
+    clearElements: () => set({elements: []}),
+    clearElementRotation: () => set({elementRotation: {}}),
+    clearAreaWidth: () => set({areaWidth: 500}),
+    clearAreaHeight: () => set({areaHeight: 500}),
+    clearCustomizableElementId: () => set({customizableElementId: null}),
+
+
     setWidth: (width) => set({areaWidth: width}),
     setHeight: (height) => set({areaHeight: height}),
     setElementRotation: (id, angle) => {
@@ -37,7 +47,6 @@ export const elementsStore = create((set, get) => ({
         });
     },
 
-    clearSelected: () => set({selected: []}),
 
     isSelected: (id) => get().selected.includes(id),
 
@@ -185,5 +194,4 @@ export const elementsStore = create((set, get) => ({
         const state = get();
         return state.elements.find(el => el.id === state.customizableElementId);
     },
-    clearElements: () => set({elements: []}),
 }));
