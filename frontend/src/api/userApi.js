@@ -67,13 +67,16 @@ const userApi = {
         const response = await fetch(`${BASE_URL}/projects`, {
             method: 'DELETE',
             credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
             body: JSON.stringify({ id: projectId }),
         });
         if (!response.ok) {
             return { error: (await response.json()).message };
         }
         return await response.json();
-    },
+    }
 }
 
 export default userApi;

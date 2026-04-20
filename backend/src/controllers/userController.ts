@@ -89,6 +89,43 @@ const createProject = async (req: Request, res: Response) => {
     }
 }
 
+const renameProject = async (req: Request, res: Response) => {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({error: "Unauthorized"});
+        }
+        const {id, name} = req.body as {id?: number, name?: string};
+        if (!id || !name) {
+            return res.status(400).json({error: "Id and name are required"});
+        }
+        const normalizedId = Number(id);
+        if (isNaN(normalizedId)) {
+            return res.status(400).json({error: "Id is not a number"});
+        }
+        const normalizedName = name.trim();
+        if (normalizedName.length === 0) {
+            return res.status(400).json({error: "Name is required"});
+        }
+        const currentProject = await prisma.project.findFirst({
+            where: {id: normalizedId, userId},
+            select: {id: true, name: true},
+        });
+        if (!currentProject) {
+            return res.status(404).json({error: "Project not found"});
+        }
+        const updatedProject = await prisma.project.update({
+            where: {id: normalizedId},
+            data: {name: normalizedName},
+            select: {id: true, name: true},
+        });
+        res.status(200).json({project: updatedProject});
+    } catch (error) {
+        console.error("Error in renameProject:", error);
+        res.status(500).json({error: "Internal server error"});
+    }
+}
+
 const updateProject = async (req: Request, res: Response) => {
     try {
         // Проверяем, что запрос пришел от авторизованного пользователя.
@@ -133,4 +170,40 @@ const updateProject = async (req: Request, res: Response) => {
     }
 }
 
-export {getMe, getProjects, createProject, updateProject, getProjectSnapshot};
+const deleteProject = async (req: Request, res: Response) => {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({error: "Unauthorized"});
+        }
+        const {id} = req.body as {id?: number};
+        if (!id) {
+            return res.status(400).json({error: "Id is required"});
+        }
+        const normalizedId = Number(id);
+        if (isNaN(normalizedId)) {
+            return res.status(400).json({error: "Id is not a number"});
+        }
+        const currentProject = await prisma.project.findFirst({
+            where: {id: normalizedId, userId},
+            select: {id: true, name: true},
+        });
+        if (!currentProject) {
+            return res.status(404).json({error: "Project not found"});
+        }
+        await prisma.$transaction([
+            prisma.projectVersion.deleteMany({
+                where: {projectId: normalizedId},
+            }),
+            prisma.project.delete({
+                where: {id: normalizedId},
+            }),
+        ]);
+        res.status(200).json({message: "Project deleted successfully"});
+    } catch (error) {
+        console.error("Error in deleteProject:", error);
+        res.status(500).json({error: "Internal server error"});
+    }
+}
+
+export {getMe, getProjects, createProject, updateProject, getProjectSnapshot, renameProject, deleteProject};

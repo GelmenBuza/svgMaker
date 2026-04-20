@@ -41,10 +41,14 @@ export default function UserProjects() {
         setProjectRenameName('');
     }
 
-    const handleDeleteProject = (projectId) => {
-        console.info(`TODO: удаление проекта ${projectId}`);
+    const handleDeleteProject = async (projectId) => {
+        const response = await userApi.deleteProject(projectId);
+        if (response.error) {
+            console.error(response.error);
+        }
+        saveProjectsToStore(projects.filter(project => project.id !== projectId));
+        getUserProjects();
     }
-
     useEffect(() => {
         getUserProjects();
     }, []);
