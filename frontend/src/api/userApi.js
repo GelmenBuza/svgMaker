@@ -35,6 +35,20 @@ const userApi = {
         }
         return await response.json();
     },
+    renameProject: async (projectId, name) => {
+        const response = await fetch(`${BASE_URL}/projects/rename`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: projectId, name: name }),
+        });
+        if (!response.ok) {
+            return { error: (await response.json()).message };
+        }
+        return await response.json();
+    },
     updateProject: async (projectId, name, snapshot) => {
         const response = await fetch(`${BASE_URL}/projects`, {
             method: 'PUT',

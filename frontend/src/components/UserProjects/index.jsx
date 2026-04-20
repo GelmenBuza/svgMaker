@@ -4,7 +4,11 @@ import userApi from '../../api/userApi.js';
 import { Link } from 'react-router';
 
 export default function UserProjects() {
-    const {saveProjectsToStore} = userStore();
+    const [projectRenameName, setProjectRenameName] = useState('');
+    const [isProjectRenaming, setIsProjectRenaming] = useState(false);
+    const [renamedProjectId, setRenamedProjectId] = useState(null);
+
+    const { saveProjectsToStore } = userStore();
     const [projects, setProjects] = useState([]);
 
     const getUserProjects = async () => {
@@ -25,6 +29,22 @@ export default function UserProjects() {
         getUserProjects();
     }
 
+    const handleRenameProject = async (projectId) => {
+        const response = await userApi.renameProject(projectId, projectRenameName);
+        if (response.error) {
+            console.error(response.error);
+        }
+        saveProjectsToStore(projects.map(project => project.id === projectId ? response.project : project));
+        getUserProjects();
+        setIsProjectRenaming(false);
+        setRenamedProjectId(null);
+        setProjectRenameName('');
+    }
+
+    const handleDeleteProject = (projectId) => {
+        console.info(`TODO: удаление проекта ${projectId}`);
+    }
+
     useEffect(() => {
         getUserProjects();
     }, []);
@@ -33,11 +53,28 @@ export default function UserProjects() {
         <div>
             <h1>User Projects</h1>
             {projects.length > 0 ? (
-            <ul>
-                {projects.map((project) => (
-                    <li key={project.id}><Link to={`/draw?projectId=${project.id}`}>{project.name}</Link></li>
-                ))}
-            </ul>
+                <ul>
+                    {projects.map((project) => (
+                        <li key={project.id}>
+                            {isProjectRenaming && renamedProjectId === project.id ? (
+                                <>
+                                    <input type="text" value={projectRenameName} onChange={(e) => setProjectRenameName(e.target.value)} />
+                                    <button type="button" onClick={() => handleRenameProject(project.id)}>Save</button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link to={`/draw?projectId=${project.id}`}>{project.name}</Link>
+                                    <button type="button" onClick={() => {
+                                        setIsProjectRenaming(true);
+                                        setRenamedProjectId(project.id);
+                                        setProjectRenameName(project.name);
+                                    }}>Rename</button>
+                                </>
+                            )}
+                            <button type="button" onClick={() => handleDeleteProject(project.id)}>Delete</button>
+                        </li>
+                    ))}
+                </ul>
             ) : (
                 <p>У вас пока нет проектов. Создайте свой первый проект!</p>
             )}
