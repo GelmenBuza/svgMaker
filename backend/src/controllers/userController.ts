@@ -1,11 +1,111 @@
 import type {Request, Response} from "express";
 import { prisma } from "../prismaClient";
+import bcrypt from "bcrypt";
 
 
 const getMe = (req: Request, res: Response) => {
     res.json({ user: req.userId });
 }
+// Пользователь
+const changeUsername = async (req: Request, res: Response) => {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({error: "Unauthorized"});
+        }
+        const {username} = req.body as {username?: string};
+        if (!username) {
+            return res.status(400).json({error: "Username is required"});
+        }
+        const updatedUser = await prisma.user.update({
+            where: {id: userId},
+            data: {username},
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                role: true,
+                createdAt: true,
+            },
+        });
+        res.status(200).json({user: updatedUser});
+    } catch (error) {
+        console.error("Error in changeUsername:", error);
+        res.status(500).json({error: "Internal server error"});
+    }
+}
 
+const changeEmail = async (req: Request, res: Response) => {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({error: "Unauthorized"});
+        }
+        const {email} = req.body as {email?: string};
+        if (!email) {
+            return res.status(400).json({error: "Email is required"});
+        }
+        const updatedUser = await prisma.user.update({
+            where: {id: userId},
+            data: {email},
+        });
+        res.status(200).json({user: updatedUser});
+    } catch (error) {
+        console.error("Error in changeEmail:", error);
+        res.status(500).json({error: "Internal server error"});
+    }
+}
+
+const changePassword = async (req: Request, res: Response) => {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({error: "Unauthorized"});
+        }
+        const {password} = req.body as {password?: string};
+        if (!password) {
+            return res.status(400).json({error: "Password is required"});
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const updatedUser = await prisma.user.update({
+            where: {id: userId},
+            data: {password: hashedPassword},
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                role: true,
+                createdAt: true,
+            },
+        });
+        res.status(200).json({user: updatedUser});
+    } catch (error) {
+        console.error("Error in changePassword:", error);
+        res.status(500).json({error: "Internal server error"});
+    }
+}
+
+const deleteAccount = async (req: Request, res: Response) => {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({error: "Unauthorized"});
+        }
+        const deletedUser = await prisma.user.update({
+            where: {id: userId},
+            data: {deletedAt: new Date()},
+            select: {id: true, username: true, email: true, role: true, createdAt: true},
+        });
+        if (!deletedUser) {
+            return res.status(404).json({error: "User not found"});
+        }
+        res.status(200).json({user: deletedUser});
+    } catch (error) {
+        console.error("Error in deleteAccount:", error);
+        res.status(500).json({error: "Internal server error"});
+    }
+}
+// Проекты пользователя
 const getProjects = async (req: Request, res: Response) => {
     try {
         const userId = req.userId;
@@ -206,4 +306,4 @@ const deleteProject = async (req: Request, res: Response) => {
     }
 }
 
-export {getMe, getProjects, createProject, updateProject, getProjectSnapshot, renameProject, deleteProject};
+export {getMe, getProjects, createProject, updateProject, getProjectSnapshot, renameProject, deleteProject, changeUsername, changeEmail, changePassword, deleteAccount};

@@ -30,6 +30,7 @@ const register = async (req: Request, res: Response) => {
                 username: "user",
                 role: "user",
                 password: passwordHash,
+                deletedAt: null,
             },
             select: {
                 id: true,

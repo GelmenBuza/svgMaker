@@ -1,6 +1,66 @@
 const BASE_URL = 'http://localhost:3000/api/user';
 
 const userApi = {
+
+    // Пользователь
+    changeUsername: async (username) => {
+        const response = await fetch(`${BASE_URL}/user/change-username`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: username }),
+        });
+        if (!response.ok) {
+            return { error: (await response.json()).message };
+        }
+        return await response.json();
+    },
+    changeEmail: async (email) => {
+        const response = await fetch(`${BASE_URL}/user/change-email`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email }),
+        });
+        if (!response.ok) {
+            return { error: (await response.json()).message };
+        }
+        return await response.json();
+    },
+    changePassword: async (password) => {
+        const response = await fetch(`${BASE_URL}/user/change-password`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ password: password }),
+        });
+        if (!response.ok) {
+            return { error: (await response.json()).message };
+        }
+        return await response.json();
+    },
+    deleteAccount: async () => {
+        const response = await fetch(`${BASE_URL}/user/delete-account`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!response.ok) {
+            return { error: (await response.json()).message };
+        }
+        return await response.json();
+    },
+
+
+    // Проекты пользователя
     getUserProjects: async () => {
         const response = await fetch(`${BASE_URL}/projects`, {
             method: 'GET',

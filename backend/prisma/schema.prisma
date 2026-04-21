@@ -14,20 +14,20 @@ model User {
   password      String
   refresh_token String?
   createdAt     DateTime  @default(now())
-
+  deletedAt     DateTime?
   projects      Project[]
 }
 
 model Project {
-  id          Int              @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   userId      Int
-  name        String           @default("Untitled")
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  lastVersion Int              @default(0)
+  name        String   @default("Untitled")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastVersion Int      @default(0)
 
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  versions    ProjectVersion[]
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versions ProjectVersion[]
 
   @@index([userId, updatedAt])
 }
@@ -41,7 +41,7 @@ model ProjectVersion {
   isAutosave Boolean  @default(false)
   createdAt  DateTime @default(now())
 
-  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, version])
   @@index([projectId, createdAt])
