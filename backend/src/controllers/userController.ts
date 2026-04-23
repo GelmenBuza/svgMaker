@@ -94,13 +94,6 @@ const changePassword = async (req: Request, res: Response) => {
         const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: { password: hashedPassword },
-            select: {
-                id: true,
-                username: true,
-                email: true,
-                role: true,
-                createdAt: true,
-            },
         });
         res.status(200).json({ message: "Password changed successfully" });
     } catch (error) {
