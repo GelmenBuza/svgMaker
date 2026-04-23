@@ -31,14 +31,14 @@ const userApi = {
         }
         return await response.json();
     },
-    changePassword: async (password) => {
+    changePassword: async (currentPassword, newPassword) => {
         const response = await fetch(`${BASE_URL}/user/change-password`, {
             method: 'PUT',
             credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ password: password }),
+            body: JSON.stringify({ currentPassword: currentPassword, newPassword: newPassword }),
         });
         if (!response.ok) {
             return { error: (await response.json()).message };
@@ -54,7 +54,7 @@ const userApi = {
             },
         });
         if (!response.ok) {
-            return { error: (await response.json()).message };
+            return { error: (await response.json()).error };
         }
         return await response.json();
     },

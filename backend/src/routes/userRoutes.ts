@@ -1,5 +1,5 @@
 import express from "express";
-import {createProject, getMe, getProjects, updateProject, getProjectSnapshot, renameProject, deleteProject, changeUsername, changeEmail, changePassword, deleteAccount} from "../controllers/userController";
+import { createProject, getMe, getProjects, updateProject, getProjectSnapshot, renameProject, deleteProject, changeUsername, changeEmail, changePassword, deleteAccount } from "../controllers/userController";
 import authMiddleware from "../middleware/authMiddleware";
 
 
