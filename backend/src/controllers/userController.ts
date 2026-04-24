@@ -185,6 +185,33 @@ const getProjectSnapshot = async (req: Request, res: Response) => {
         res.status(500).json({ error: "Internal server error" });
     }
 }
+
+const getProjectVersions = async (req: Request, res: Response) => {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        const { projectId } = req.params as { projectId?: number };
+        if (!projectId) {
+            return res.status(400).json({ error: "Project id is required" });
+        }
+        const normalizedProjectId = Number(projectId);
+        if (isNaN(normalizedProjectId)) {
+            return res.status(400).json({ error: "Project id is not a number" });
+        }
+        const projectVersions = await prisma.projectVersion.findMany({
+            where: { projectId: normalizedProjectId },
+            orderBy: { version: "desc" },
+            select: { version: true, createdAt: true },
+        });
+        res.json({ versions: projectVersions });
+    } catch (error) {
+        console.error("Error in getProjectVersions:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
 const createProject = async (req: Request, res: Response) => {
     try {
         const userId = req.userId;
@@ -257,9 +284,9 @@ const updateProject = async (req: Request, res: Response) => {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        const { id, name, snapshot } = req.body as { id?: number, name?: string, snapshot?: object };
+        const { id, name, snapshot, type } = req.body as { id?: number, name?: string, snapshot?: object, type?: string };
         // Валидируем обязательные поля для обновления проекта.
-        if (!id || !name || !snapshot) {
+        if (!id || !name || !snapshot || !type) {
             return res.status(400).json({ error: "Id, name and snapshot are required" });
         }
 
@@ -277,7 +304,7 @@ const updateProject = async (req: Request, res: Response) => {
         const nextVersion = currentProject.lastVersion + 1;
         const [, updatedProject] = await prisma.$transaction([
             prisma.projectVersion.create({
-                data: { projectId: id, version: nextVersion, snapshot },
+                data: { projectId: id, version: nextVersion, snapshot, isAutosave: type === 'AUTO' },
             }),
             prisma.project.update({
                 where: { id },
@@ -329,4 +356,17 @@ const deleteProject = async (req: Request, res: Response) => {
     }
 }
 
-export { getMe, changeUsername, changeEmail, changePassword, deleteAccount, getProjects, getProjectSnapshot, createProject, renameProject, updateProject, deleteProject };
+export {
+    getMe,
+    changeUsername,
+    changeEmail,
+    changePassword,
+    deleteAccount,
+    getProjects,
+    getProjectSnapshot,
+    getProjectVersions,
+    createProject,
+    renameProject,
+    updateProject,
+    deleteProject
+};

@@ -81,6 +81,16 @@ const userApi = {
         }
         return await response.json();
     },
+    getProjectVersions: async (projectId) => {
+        const response = await fetch(`${BASE_URL}/projects/versions/${projectId}`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            return { error: (await response.json()).message };
+        }
+        return await response.json();
+    },
     createProject: async (name) => {
         const response = await fetch(`${BASE_URL}/projects`, {
             method: 'POST',
@@ -109,14 +119,14 @@ const userApi = {
         }
         return await response.json();
     },
-    updateProject: async (projectId, name, snapshot) => {
+    updateProject: async (projectId, name, snapshot, type) => {
         const response = await fetch(`${BASE_URL}/projects`, {
             method: 'PUT',
             credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ id: projectId, name: name, snapshot: snapshot }),
+            body: JSON.stringify({ id: projectId, name: name, snapshot: snapshot, type: type }),
         });
         if (!response.ok) {
             return { error: (await response.json()).message };

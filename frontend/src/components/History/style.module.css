@@ -1,0 +1,17 @@
+.history {
+    position: absolute;
+    top: 0;
+    left: 100px;
+    width: 200px;
+    height: fit-content;
+    background-color: #63636356;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
+}
+
+.historyList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}

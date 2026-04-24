@@ -1,5 +1,18 @@
 import express from "express";
-import { createProject, getMe, getProjects, updateProject, getProjectSnapshot, renameProject, deleteProject, changeUsername, changeEmail, changePassword, deleteAccount } from "../controllers/userController";
+import {
+    createProject,
+    getMe,
+    getProjects,
+    updateProject,
+    getProjectSnapshot,
+    renameProject,
+    deleteProject,
+    changeUsername,
+    changeEmail,
+    changePassword,
+    deleteAccount,
+    getProjectVersions
+} from "../controllers/userController";
 import authMiddleware from "../middleware/authMiddleware";
 
 
@@ -18,7 +31,8 @@ router.post("/projects", authMiddleware, createProject);
 router.put("/projects", authMiddleware, updateProject);
 router.get("/projects", authMiddleware, getProjects);
 router.get("/projects/snapshot/:projectId/:version", authMiddleware, getProjectSnapshot);
+router.get("/projects/versions/:projectId", authMiddleware, getProjectVersions);
 router.put("/projects/rename", authMiddleware, renameProject);
 router.delete("/projects", authMiddleware, deleteProject);
 
-export default router;
+export default router;  

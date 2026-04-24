@@ -15,6 +15,7 @@ import { projectsRequestStore } from '../../stores/projectsRequestStore.jsx';
 import userApi from '../../api/userApi.js';
 import CustomNotifications from '../../components/CustomNotifications/index.jsx';
 import { notificationsStore } from '../../stores/notificationsStore.jsx';
+import History from '../../components/History/index.jsx';
 
 const pushErrorNotification = (message) => {
     notificationsStore.getState().addNotificationToStack({ message }, 'alert');
@@ -84,7 +85,7 @@ const enableAutoSave = () => {
                 console.log('firstRequest', firstRequest);
                 if (firstRequest) {
                     try {
-                        const request = await userApi.updateProject(firstRequest.projectId, firstRequest.projectName, firstRequest.snapshot);
+                        const request = await userApi.updateProject(firstRequest.projectId, firstRequest.projectName, firstRequest.snapshot, 'AUTO');
                         if (request.error) {
                             autoSave(counter + 1);
                             pushErrorNotification(request.error);
@@ -167,6 +168,9 @@ function DrawPage() {
     // Очередь запросов на сохранение снапшота проекта
     const { addRequest } = projectsRequestStore();
     const { addNotificationToStack } = notificationsStore();
+
+    // Просмор истории
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
     // Включаем автосохранение
     enableAutoSave()
@@ -416,8 +420,10 @@ function DrawPage() {
                             {isTrackingMode && activeDIYPathId ? '✓ Finish DIY' : 'DIY'}
                         </button>
                     </div>
-
-
+                    <div className={styles.historyContainer}>
+                        <button onClick={() => setIsHistoryOpen(prev => !prev)}>History</button>
+                        {isHistoryOpen && <History projectId={projectId} />}
+                    </div>
                     <SVG ell={renderedElements}
                         svgWidth={areaWidth}
                         handleContextMenu={handleContextMenu}

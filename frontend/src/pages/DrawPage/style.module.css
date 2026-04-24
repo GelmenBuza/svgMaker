@@ -23,3 +23,7 @@
     box-shadow: #1a1a1a 0 0  15px 10px;
     display: flex;
 }
+
+.historyContainer {
+    position: relative;
+}
