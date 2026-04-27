@@ -48,11 +48,11 @@ export function registerChatHandlers(server: Server) {
                 const history = await getRoomHistory(room);
                 socket.emit("chat:history", history);
 
-                const systemMessage = await addSystemMessage({
-                    room,
-                    content: `User ${nickname} joined the chat`,
-                });
-                server.to(room).emit("chat:message", systemMessage);
+                // const systemMessage = await addSystemMessage({
+                //     room,
+                //     content: `User ${nickname} joined the chat`,
+                // });
+                // server.to(room).emit("chat:message", systemMessage);
 
                 callback({ ok: true });
             } catch (error) {
@@ -63,8 +63,11 @@ export function registerChatHandlers(server: Server) {
 
         socket.on("chat:message", async (payload: ChatSendPayload, callback: (ack: ChatSendAck) => void) => {
             try {
+                console.log(payload);
                 const room = payload?.room?.toString() || "";
-                const content = payload?.content?.toString() || "";
+                const content = payload?.content;
+
+                console.log(content);
 
                 if (!socketData.room || socketData.room !== room) {
                     callback({ ok: false, error: "Access denied" });
@@ -95,17 +98,17 @@ export function registerChatHandlers(server: Server) {
             const nickname = socketData.nickname;
             if (!room || !nickname) return;
 
-            void (async () => {
-                try {
-                    const systemMessage = await addSystemMessage({
-                        room,
-                        content: `User ${nickname} left the chat`,
-                    });
-                    server.to(room).emit("chat:message", systemMessage);
-                } catch (error) {
-                    console.error("Error on chat disconnect", error);
-                }
-            })();
+            // void (async () => {
+            //     try {
+            //         const systemMessage = await addSystemMessage({
+            //             room,
+            //             content: `User ${nickname} left the chat`,
+            //         });
+            //         server.to(room).emit("chat:message", systemMessage);
+            //     } catch (error) {
+            //         console.error("Error on chat disconnect", error);
+            //     }
+            // })();
         });
     })
 }

@@ -10,7 +10,7 @@ function mapRowToChatMessage(row: Messages): ChatMessage {
         id: row.id,
         sender_id: row.sender_id,
         ...(row.nickname != null && row.nickname !== "" ? { nickname: row.nickname } : {}),
-        content: row.content,
+        content: JSON.parse(row.content),
         createdAt: row.createdAt,
     };
 }
@@ -28,18 +28,21 @@ export async function addMessage(params: {
     nickname: ChatNickname;
     content: string;
 }): Promise<ChatMessage> {
-    const text = normalizeText(params.content);
+    // const text = normalizeText(params.content);
+    const text = JSON.stringify(params.content);
     if (!text) {
         throw new Error("Text cannot be empty");
     }
-    if (text.length > MAX_TEXT_LENGTH) {
-        throw new Error(`Text cannot be longer than ${MAX_TEXT_LENGTH} characters`);
-    }
+    // if (text.length > MAX_TEXT_LENGTH) {
+    //     throw new Error(`Text cannot be longer than ${MAX_TEXT_LENGTH} characters`);
+    // }
 
     const user = await prisma.user.findFirst({
         where: { username: params.nickname },
     });
     const sender_id = user?.id ?? 0;
+
+    // console.log('text', text)
 
     const message = await prisma.messages.create({
         data: {
@@ -53,23 +56,24 @@ export async function addMessage(params: {
     return mapRowToChatMessage(message);
 }
 
-export async function addSystemMessage(params: {
-    room: ChatRoomName;
-    content: string;
-}): Promise<ChatMessage> {
-    const text = normalizeText(params.content);
-    const message = await prisma.messages.create({
-        data: {
-            room: params.room,
-            sender_id: SYSTEM_SENDER_ID,
-            nickname: null,
-            content: text,
-        },
-    });
+// export async function addSystemMessage(params: {
+//     room: ChatRoomName;
+//     content: string;
+// }): Promise<ChatMessage> {
+//     // const text = normalizeText(params.content);
+//     const text = params.content;
+//     const message = await prisma.messages.create({
+//         data: {
+//             room: params.room,
+//             sender_id: SYSTEM_SENDER_ID,
+//             nickname: null,
+//             content: text,
+//         },
+//     });
+//
+//     return mapRowToChatMessage(message);
+// }
 
-    return mapRowToChatMessage(message);
-}
-
-function normalizeText(text: string): string {
-    return text.trim().replace(/\s+/g, " ");
-}
+// function normalizeText(text: string): string {
+//     return text.trim().replace(/\s+/g, " ");
+// }

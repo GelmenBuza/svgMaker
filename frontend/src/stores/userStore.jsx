@@ -7,6 +7,7 @@ export const userStore = create((set, get) => ({
     clearProjects: () => set({ projects: [] }),
 
     user: null,
+    private_key: "zdes_ochen_slozhni_parol",
     projects: [],
     setUser: (user) => set({ user: user }),
     getUser: () => get().user,

@@ -1,11 +1,14 @@
-import { useCallback, useState, useRef } from "react";
-import { io } from "socket.io-client";
+import {useCallback, useState, useRef} from "react";
+import {io} from "socket.io-client";
+import {userStore} from "../stores/userStore.jsx";
+import {decryptMessage, encriptMessage} from "../utils/crypto.js";
 
 function isSystemMessage(message) {
     return message.kind === "system";
 }
 
 export function useChatSocket() {
+    const {private_key} = userStore()
     const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
     const socketRef = useRef(null);
     const activeRoomRef = useRef(null);
@@ -41,8 +44,7 @@ export function useChatSocket() {
             const onJoinAck = (ack) => {
                 if (ack.ok) {
                     setStatus("connected");
-                }
-                else {
+                } else {
                     setError(ack.error);
                 }
             }
@@ -60,27 +62,53 @@ export function useChatSocket() {
         });
 
         socket.on('chat:history', (history) => {
-            setMessages(history);
+            const fetchHistory = async () => {
+                try {
+                    const decryptedHistory = await Promise.all(
+                        history.map(async (msg) => {
+                            // msg.content — это объект {cipher, iv}
+                            const decryptedText = await decryptMessage(msg.content, private_key);
+                            return {...msg, content: decryptedText}; // Заменяем объект на текст
+                        })
+                    );
+                    setMessages(decryptedHistory);
+                } catch (e) {
+                    console.error("Ошибка расшифровки истории: ", e);
+                }
+            };
+            fetchHistory();
         });
 
-        socket.on('chat:message', (message) => {
-            setMessages((prev) => [...prev, message]);
+        socket.on('chat:message', async (message) => {
+            try {
+                // Расшифровываем контент перед сохранением
+                const decryptedText = await decryptMessage(message.content, private_key);
+                const processedMessage = { ...message, content: decryptedText };
+
+                setMessages((prev) => [...prev, processedMessage]);
+            } catch (e) {
+                console.error("Не удалось расшифровать входящее сообщение", e);
+            }
         });
 
         socket.connect();
     }, [backendUrl, disconnect]);
 
-    const sendMessage = useCallback((message) => {
+    const sendMessage = useCallback(async (message) => {
         const socket = socketRef.current;
         const room = activeRoomRef.current;
         if (!socket || !room) return;
-        socket.emit("chat:message", { room, content: message }, (ack) => {
+        console.log("sendMessage", message, room);
+        const encrypted = await encriptMessage(message, private_key)
+        console.log("encrypted", encrypted)
+
+        socket.emit("chat:message", {room, content: encrypted}, (ack) => {
             if (!ack.ok) {
                 setStatus("error");
                 setError(ack.error);
             }
         });
-    }, [setStatus]);
+    }, [setStatus, private_key]);
 
-    return { status, messages, error, disconnect, connect, sendMessage };
+    return {status, messages, error, disconnect, connect, sendMessage};
 }

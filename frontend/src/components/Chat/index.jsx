@@ -1,21 +1,22 @@
-import { useState, useRef, useEffect } from 'react';
+import {useState, useRef, useEffect} from 'react';
 import style from './style.module.css';
-import { userStore } from '../../stores/userStore';
-import { useChatSocket } from '../../api/chatApi';
+import {userStore} from '../../stores/userStore';
+import {useChatSocket} from '../../api/chatApi';
+import {encriptMessage} from "../../utils/crypto.js";
 
 export default function Chat() {
-    const { user } = userStore();
+    const {user, private_key} = userStore();
     const [isOpen, setIsOpen] = useState(false);
     const room = "general";
     const [text, setText] = useState('');
     const [uiError, setUiError] = useState(null);
-    
-    const { status, messages, error, disconnect, connect, sendMessage } = useChatSocket();
-    
+
+    const {status, messages, error, disconnect, connect, sendMessage} = useChatSocket();
+
     const endRef = useRef(null);
 
     useEffect(() => {
-        endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+        endRef.current?.scrollIntoView({behavior: "smooth", block: "end"});
     }, [messages.length]);
 
     const handleConnect = () => {
@@ -23,16 +24,18 @@ export default function Chat() {
         if (!user) setUiError("Для использования чата необходимо авторизоваться");
         else {
             console.log("connect");
-            connect({ room, nickname: user.username });
+            connect({room, nickname: user.username});
             setIsOpen(true);
         }
     }
-    
-    const handleSend = (e) => {
+
+    const handleSend = async (e) => {
         e.preventDefault();
         const payload = text.trim();
         if (!payload || status !== "connected") return;
         setUiError(null);
+
+
         sendMessage(payload);
         setText('');
     };
