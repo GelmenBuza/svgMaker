@@ -2,7 +2,7 @@ import {useState, useRef, useEffect} from 'react';
 import style from './style.module.css';
 import {userStore} from '../../stores/userStore';
 import {useChatSocket} from '../../api/chatApi';
-import {encriptMessage} from "../../utils/crypto.js";
+import {encryptMessage} from "../../utils/crypto.js";
 
 export default function Chat() {
     const {user, private_key} = userStore();

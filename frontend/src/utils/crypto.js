@@ -21,7 +21,7 @@ async function deriveKey(password) {
     );
 }
 
-export async function encriptMessage(text, password) {
+export async function encryptMessage(text, password) {
     const key = await deriveKey(password);
     const iv = window.crypto.getRandomValues(new Uint8Array(12));
     const encoder = new TextEncoder();
@@ -33,23 +33,30 @@ export async function encriptMessage(text, password) {
     );
 
     return {
-        cipher: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
-        iv: btoa(String.fromCharCode(...iv))
+        cipher: encrypted,
+        iv: iv,
     };
 }
 
-export async function decryptMessage(encryptedObj, password) {
+export async function decryptMessage(encrypted, password) {
     const key = await deriveKey(password);
-    console.log(encryptedObj, password);
-    const iv = Uint8Array.from(atob(encryptedObj.iv), c => c.charCodeAt(0));
-    const data = Uint8Array.from(atob(encryptedObj.cipher), c => c.charCodeAt(0));
+    const binaryString = atob(encrypted);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    const iv = bytes.slice(0, 12)
+    const ciphertext = bytes.slice(12);
 
-    const decrypted = await window.crypto.subtle.decrypt(
-        {name: "AES-GCM", iv: iv},
+    const decryptedBuffer = await window.crypto.subtle.decrypt(
+        {
+            name: "AES-GCM",
+            iv: iv
+        },
         key,
-        data
+        ciphertext
     );
 
     const decoder = new TextDecoder();
-    return decoder.decode(decrypted);
+    return decoder.decode(decryptedBuffer);
 }

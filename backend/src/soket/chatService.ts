@@ -10,7 +10,7 @@ function mapRowToChatMessage(row: Messages): ChatMessage {
         id: row.id,
         sender_id: row.sender_id,
         ...(row.nickname != null && row.nickname !== "" ? { nickname: row.nickname } : {}),
-        content: JSON.parse(row.content),
+        content: row.content,
         createdAt: row.createdAt,
     };
 }
@@ -29,7 +29,7 @@ export async function addMessage(params: {
     content: string;
 }): Promise<ChatMessage> {
     // const text = normalizeText(params.content);
-    const text = JSON.stringify(params.content);
+    const text = params.content;
     if (!text) {
         throw new Error("Text cannot be empty");
     }

@@ -1,7 +1,7 @@
 import {useCallback, useState, useRef} from "react";
 import {io} from "socket.io-client";
 import {userStore} from "../stores/userStore.jsx";
-import {decryptMessage, encriptMessage} from "../utils/crypto.js";
+import {decryptMessage, encryptMessage} from "../utils/crypto.js";
 
 function isSystemMessage(message) {
     return message.kind === "system";
@@ -66,7 +66,6 @@ export function useChatSocket() {
                 try {
                     const decryptedHistory = await Promise.all(
                         history.map(async (msg) => {
-                            // msg.content — это объект {cipher, iv}
                             const decryptedText = await decryptMessage(msg.content, private_key);
                             return {...msg, content: decryptedText}; // Заменяем объект на текст
                         })
@@ -99,10 +98,21 @@ export function useChatSocket() {
         const room = activeRoomRef.current;
         if (!socket || !room) return;
         console.log("sendMessage", message, room);
-        const encrypted = await encriptMessage(message, private_key)
-        console.log("encrypted", encrypted)
+        const encrypted = await encryptMessage(message, private_key)
 
-        socket.emit("chat:message", {room, content: encrypted}, (ack) => {
+        const ivArray = new Uint8Array(encrypted.iv);
+        const cipherArray = new Uint8Array(encrypted.cipher);
+
+        console.log("Длины:", ivArray.length, cipherArray.length); // Проверь, что тут не 0!
+
+        const combinedMessage = new Uint8Array(ivArray.length + cipherArray.length);
+        combinedMessage.set(ivArray, 0);
+        combinedMessage.set(cipherArray, ivArray.length);
+        const base64CombinedMessage = btoa(
+            combinedMessage.reduce((data, byte) => data + String.fromCharCode(byte), '')
+        );
+
+        socket.emit("chat:message", {room, content: base64CombinedMessage}, (ack) => {
             if (!ack.ok) {
                 setStatus("error");
                 setError(ack.error);
