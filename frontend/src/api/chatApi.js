@@ -32,6 +32,7 @@ export function useChatSocket() {
         disconnect();
 
         const socket = io(backendUrl, {
+            withCredentials: true,
             autoConnect: false,
             transports: ["websocket"],
         });

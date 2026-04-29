@@ -1,7 +1,6 @@
 import {Request, Response, NextFunction} from "express";
-
-import jwt, {JwtPayload} from "jsonwebtoken";
 import {prisma} from "../prismaClient";
+import {verifyToken} from "../utils/jwt.utils";
 
 const authMiddleware = async (
     req: Request,
@@ -17,9 +16,7 @@ const authMiddleware = async (
             return res.status(401).json({error: "Authentication required"});
         }
 
-        const jwtSecret = process.env.JWT_SECRET as string;
-
-        const decoded = jwt.verify(AccessToken, jwtSecret) as JwtPayload;
+        const decoded = verifyToken(AccessToken);
         req.userId = decoded.userId;
 
 
