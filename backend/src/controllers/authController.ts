@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { prisma } from "../prismaClient";
 import { createAccessToken, createRefreshToken, verifyToken } from "../utils/jwt.utils";
-import { error } from "node:console";
 
 
 const register = async (req: Request, res: Response) => {
