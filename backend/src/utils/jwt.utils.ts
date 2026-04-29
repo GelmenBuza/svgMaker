@@ -8,7 +8,7 @@ export const createAccessToken = (payload: { userId: number }): string => {
     return jwt.sign(payload, jwtSecret, {expiresIn: "15m"});
 };
 
-export const createRefreshToken = (payload: { userId: number }): string => {
+export const createRefreshToken = (payload: { userId: number, sessionId: number }): string => {
     return jwt.sign(payload, jwtSecret, {expiresIn: "7d"});
 };
 

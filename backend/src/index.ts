@@ -8,7 +8,8 @@ import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import {prisma} from "./prismaClient";
 import {registerChatHandlers} from "./soket/chatSoket";
-import {verifyToken} from "./utils/jwt.utils";
+import projectsRoutes from "./routes/projectsRoutes";
+import socketMiddleware from "./middleware/socketMiddleware";
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
@@ -29,6 +30,7 @@ app.get("/health", (_req: Request, res: Response) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/projects", projectsRoutes)
 
 const httpServer = createServer(app);
 
@@ -41,36 +43,7 @@ const io = new Server(httpServer, {
 
 io.engine.use(cookieParser());
 
-io.use(async (socket, next) => {
-    console.log(socket.handshake);
-    const cookies = socket.request.cookies;
-    if (!cookies) {
-        return next(new Error(`Cookie not found`));
-    }
-    console.log(cookies)
-
-    if (!cookies.accessToken) {
-        return next(new Error("Not authorized"));
-    }
-    const AccessToken = cookies.accessToken;
-    if (!AccessToken) {
-        return next(new Error("Authentication required"));
-    }
-
-    const decoded = verifyToken(AccessToken);
-    const userId = decoded.userId;
-
-
-    const user = await prisma.user.findUnique({
-        where: {id: userId},
-        select: {id: true},
-    });
-
-    if (!user) {
-        return next(new Error("User not found"));
-    }
-    next();
-})
+io.use(socketMiddleware)
 
 registerChatHandlers(io);
 

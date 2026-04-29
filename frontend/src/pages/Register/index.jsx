@@ -48,7 +48,7 @@ export default function Register() {
             return;
         }
         console.log("user", getUser());
-        navigate('/draw');
+        navigate('/');
     }
 
     return (

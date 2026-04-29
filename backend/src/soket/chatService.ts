@@ -1,5 +1,6 @@
 import { prisma } from "../prismaClient";
 import type { ChatMessage, ChatRoomName, ChatNickname } from "../types/chat.types";
+import {Messages} from "@prisma/client";
 
 const MAX_TEXT_LENGTH = 1000;
 const SYSTEM_SENDER_ID = -1;
