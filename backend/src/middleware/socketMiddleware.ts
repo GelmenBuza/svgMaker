@@ -1,9 +1,10 @@
 import {verifyToken} from "../utils/jwt.utils";
 import {prisma} from "../prismaClient";
-import {ExtendedError, Socket} from "socket.io";
+import { Socket} from "socket.io";
+import {MiddlewareNext} from '../types/socket.types';
 
 
-type MiddlewareNext = (err?: ExtendedError) => void;
+
 
 export default async function SocketMiddleware(socket: Socket, next: MiddlewareNext) {
     try {
