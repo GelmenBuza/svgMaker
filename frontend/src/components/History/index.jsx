@@ -1,9 +1,9 @@
 import style from './style.module.css';
-import userApi from '../../api/userApi';
 import { useState, useEffect } from 'react';
+import projectsApi from "../../api/projectsApi.js";
 
 const getProjectVersions = async (projectId) => {
-    const response = await userApi.getProjectVersions(projectId);
+    const response = await projectsApi.getProjectVersions(projectId);
     if (response.error) {
         return { error: response.error };
     }

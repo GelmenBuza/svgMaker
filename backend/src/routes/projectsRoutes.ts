@@ -14,12 +14,12 @@ const router = express.Router();
 
 
 // Проекты пользователя
-router.post("/projects", authMiddleware, createProject);
-router.put("/projects", authMiddleware, updateProject);
-router.get("/projects", authMiddleware, getProjects);
-router.get("/projects/snapshot/:projectId/:version", authMiddleware, getProjectSnapshot);
-router.get("/projects/versions/:projectId", authMiddleware, getProjectVersions);
-router.put("/projects/rename", authMiddleware, renameProject);
-router.delete("/projects", authMiddleware, deleteProject);
+router.post("/createProject", authMiddleware, createProject);
+router.put("/updateProject", authMiddleware, updateProject);
+router.get("/getProjects", authMiddleware, getProjects);
+router.get("/snapshot/:projectId/:version", authMiddleware, getProjectSnapshot);
+router.get("/versions/:projectId", authMiddleware, getProjectVersions);
+router.put("/rename", authMiddleware, renameProject);
+router.delete("/deleteProject", authMiddleware, deleteProject);
 
 export default router;

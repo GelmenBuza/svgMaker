@@ -1,7 +1,7 @@
 import { userStore } from '../../stores/userStore';
 import { useState, useEffect } from 'react';
-import userApi from '../../api/userApi.js';
 import { Link } from 'react-router';
+import projectsApi from "../../api/projectsApi.js";
 
 export default function UserProjects() {
     const [projectRenameName, setProjectRenameName] = useState('');
@@ -12,7 +12,7 @@ export default function UserProjects() {
     const [projects, setProjects] = useState([]);
 
     const getUserProjects = async () => {
-        const response = await userApi.getUserProjects();
+        const response = await projectsApi.getUserProjects();
         if (response.error) {
             console.error(response.error);
         }
@@ -21,7 +21,7 @@ export default function UserProjects() {
     }
 
     const createProject = async () => {
-        const response = await userApi.createProject('New Project');
+        const response = await projectsApi.createProject('New Project');
         if (response.error) {
             console.error(response.error);
         }
@@ -30,7 +30,7 @@ export default function UserProjects() {
     }
 
     const handleRenameProject = async (projectId) => {
-        const response = await userApi.renameProject(projectId, projectRenameName);
+        const response = await projectsApi.renameProject(projectId, projectRenameName);
         if (response.error) {
             console.error(response.error);
         }
@@ -42,7 +42,7 @@ export default function UserProjects() {
     }
 
     const handleDeleteProject = async (projectId) => {
-        const response = await userApi.deleteProject(projectId);
+        const response = await projectsApi.deleteProject(projectId);
         if (response.error) {
             console.error(response.error);
         }

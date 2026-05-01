@@ -1,68 +1,9 @@
-const BASE_URL = 'http://localhost:3000/api/user';
+const BASE_URL = 'http://localhost:3000/api/projects';
 
-const userApi = {
-
-    // Пользователь
-    changeUsername: async (username) => {
-        const response = await fetch(`${BASE_URL}/change-username`, {
-            method: 'PUT',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username: username }),
-        });
-        if (!response.ok) {
-            return { error: (await response.json()).message };
-        }
-        return await response.json();
-    },
-    changeEmail: async (email) => {
-        const response = await fetch(`${BASE_URL}/change-email`, {
-            method: 'PUT',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email: email }),
-        });
-        if (!response.ok) {
-            return { error: (await response.json()).message };
-        }
-        return await response.json();
-    },
-    changePassword: async (currentPassword, newPassword) => {
-        const response = await fetch(`${BASE_URL}/change-password`, {
-            method: 'PUT',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ currentPassword: currentPassword, newPassword: newPassword }),
-        });
-        if (!response.ok) {
-            return { error: (await response.json()).message };
-        }
-        return await response.json();
-    },
-    deleteAccount: async () => {
-        const response = await fetch(`${BASE_URL}/delete-account`, {
-            method: 'DELETE',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-        if (!response.ok) {
-            return { error: (await response.json()).error };
-        }
-        return await response.json();
-    },
-
-
+const projectsApi = {
     // Проекты пользователя
     getUserProjects: async () => {
-        const response = await fetch(`${BASE_URL}/projects`, {
+        const response = await fetch(`${BASE_URL}/getProjects`, {
             method: 'GET',
             credentials: 'include',
         });
@@ -72,7 +13,7 @@ const userApi = {
         return await response.json();
     },
     getProjectSnapshot: async (projectId, version) => {
-        const response = await fetch(`${BASE_URL}/projects/snapshot/${projectId}/${version}`, {
+        const response = await fetch(`${BASE_URL}/snapshot/${projectId}/${version}`, {
             method: 'GET',
             credentials: 'include',
         });
@@ -82,7 +23,7 @@ const userApi = {
         return await response.json();
     },
     getProjectVersions: async (projectId) => {
-        const response = await fetch(`${BASE_URL}/projects/versions/${projectId}`, {
+        const response = await fetch(`${BASE_URL}/versions/${projectId}`, {
             method: 'GET',
             credentials: 'include',
         });
@@ -92,7 +33,7 @@ const userApi = {
         return await response.json();
     },
     createProject: async (name) => {
-        const response = await fetch(`${BASE_URL}/projects`, {
+        const response = await fetch(`${BASE_URL}/createProject`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -106,7 +47,7 @@ const userApi = {
         return await response.json();
     },
     renameProject: async (projectId, name) => {
-        const response = await fetch(`${BASE_URL}/projects/rename`, {
+        const response = await fetch(`${BASE_URL}/rename`, {
             method: 'PUT',
             credentials: 'include',
             headers: {
@@ -120,7 +61,7 @@ const userApi = {
         return await response.json();
     },
     updateProject: async (projectId, name, snapshot, type) => {
-        const response = await fetch(`${BASE_URL}/projects`, {
+        const response = await fetch(`${BASE_URL}/updateProject`, {
             method: 'PUT',
             credentials: 'include',
             headers: {
@@ -134,7 +75,7 @@ const userApi = {
         return await response.json();
     },
     deleteProject: async (projectId) => {
-        const response = await fetch(`${BASE_URL}/projects`, {
+        const response = await fetch(`${BASE_URL}/deleteProject`, {
             method: 'DELETE',
             credentials: 'include',
             headers: {
@@ -149,4 +90,4 @@ const userApi = {
     }
 }
 
-export default userApi;
+export default projectsApi;

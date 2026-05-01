@@ -12,10 +12,10 @@ import NavMenu from '../../components/NavMenu/index.jsx';
 import { useNavigate, useSearchParams } from 'react-router';
 import { userStore } from '../../stores/userStore.jsx';
 import { projectsRequestStore } from '../../stores/projectsRequestStore.jsx';
-import userApi from '../../api/userApi.js';
 import CustomNotifications from '../../components/CustomNotifications/index.jsx';
 import { notificationsStore } from '../../stores/notificationsStore.jsx';
 import History from '../../components/History/index.jsx';
+import projectsApi from "../../api/projectsApi.js";
 
 const pushErrorNotification = (message) => {
     notificationsStore.getState().addNotificationToStack({ message }, 'alert');
@@ -85,7 +85,7 @@ const enableAutoSave = () => {
                 console.log('firstRequest', firstRequest);
                 if (firstRequest) {
                     try {
-                        const request = await userApi.updateProject(firstRequest.projectId, firstRequest.projectName, firstRequest.snapshot, 'AUTO');
+                        const request = await projectsApi.updateProject(firstRequest.projectId, firstRequest.projectName, firstRequest.snapshot, 'AUTO');
                         if (request.error) {
                             autoSave(counter + 1);
                             pushErrorNotification(request.error);
@@ -109,7 +109,7 @@ const loadProject = async (projectId, user, projects, setWidth, setHeight, setEl
     clearElements();
     let lastVersion = projects.find(project => project.id === projectId).lastVersion;
     if (!lastVersion) {
-        const newProjects = await userApi.getUserProjects();
+        const newProjects = await projectsApi.getUserProjects();
         if (newProjects.error) {
             pushErrorNotification(newProjects.error);
             console.error(newProjects.error);
@@ -122,7 +122,7 @@ const loadProject = async (projectId, user, projects, setWidth, setHeight, setEl
             return;
         }
     }
-    const snapshot = await userApi.getProjectSnapshot(projectId, lastVersion);
+    const snapshot = await projectsApi.getProjectSnapshot(projectId, lastVersion);
     if (snapshot.error) {
         pushErrorNotification(snapshot.error);
         console.error(snapshot.error);
